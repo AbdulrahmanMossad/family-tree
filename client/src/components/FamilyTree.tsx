@@ -912,7 +912,7 @@ function HomeView({ onNavigate, onOpenSearch, onOpenAbout }: { onNavigate: (id: 
       >
         <div className="label">فرع البحيرة</div>
         <div className="title">أبو حمص وإدكو</div>
-        <div className="subtitle">أبناء العم الزفتاوية في البحيرة</div>
+        <div className="subtitle">أبناء العم  في البحيرة</div>
         <div className="arrow">←</div>
       </button>
 
