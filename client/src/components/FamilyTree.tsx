@@ -1069,12 +1069,15 @@ export default function FamilyTreeApp() {
         {/* Branch Switcher */}
         <div style={{ display: 'flex', gap: 6 }}>
           {(['root', 'bohaira-root'] as const).map((branch) => (
-            <button key={branch} onClick={() => { setActiveRoot(branch); setSelectedId(null); }} style={{
+            <button key={branch} onClick={() => { setActiveRoot(branch); setSelectedId(null); }} 
+            style={{
               padding: '8px 14px', borderRadius: 6, border: '1px solid #e5e7eb',
+              marginLeft: "5px",
               background: activeRoot === branch ? '#3b82f6' : '#f9fafb',
               color: activeRoot === branch ? '#fff' : '#1f2937',
               fontFamily: "'Segoe UI', sans-serif", fontSize: 12, cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s',
-            }} onMouseEnter={(e) => { if (activeRoot !== branch) { e.currentTarget.style.background = '#f3f4f6'; } }} onMouseLeave={(e) => { if (activeRoot !== branch) { e.currentTarget.style.background = '#f9fafb'; } }}>
+            }} 
+            onMouseEnter={(e) => { if (activeRoot !== branch) { e.currentTarget.style.background = '#f3f4f6'; } }} onMouseLeave={(e) => { if (activeRoot !== branch) { e.currentTarget.style.background = '#f9fafb'; } }}>
               {branch === 'root' ? '🏘 زفتي' : '🌊 البحيرة'}
             </button>
           ))}
