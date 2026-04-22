@@ -346,7 +346,7 @@ function shortenName(name: string): string {
   if (!name) return '';
   let clean = name;
   for (const t of TITLES) {
-    if (clean.startsWith(t + ' ')) { clean = clean.substring(t.length + 1); break; }
+    if (clean.startsWith(t + ' ')) { clean = clean.slice(t.length + 1); break; }
   }
   const parts = clean.split(/\s+/);
   if (parts.length <= 2) return clean;
@@ -365,120 +365,93 @@ function getAllPeople(): any[] {
   return Object.values(people).filter((p: any) => p && p.name);
 }
 
-function buildAncestry(id: string): any[] {
-  const chain = [];
-  let cur = id;
-  while (cur && people[cur]) {
-    chain.unshift(people[cur]);
-    cur = people[cur].parent;
-  }
-  return chain;
-}
-
 // ==================== STYLES ====================
 const STYLES = `
 :root {
   --male-color: #3B82F6;
-  --male-color-light: #60A5FA;
+  --male-color-light: #93C5FD;
   --female-color: #EC4899;
-  --female-color-light: #F472B6;
+  --female-color-light: #F9A8D4;
   --couple-color: #10B981;
-  --couple-color-light: #34D399;
+  --couple-color-light: #6EE7B7;
   --text-primary: #1F2937;
   --text-secondary: #6B7280;
   --bg-white: #FFFFFF;
-  --bg-gray: #F9FAFB;
+  --bg-gray: #F3F4F6;
   --line-color: #9CA3AF;
   --heart-color: #10B981;
 }
 
 .fm-root * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-.fm-root { direction: rtl; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-html, body, #root { height: 100%; overscroll-behavior: none; }
+.fm-root { direction: rtl; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; background: var(--bg-white); }
+html, body, #root { min-height: 100%; }
 body {
   background: var(--bg-white);
   color: var(--text-primary);
   font-size: 16px;
   line-height: 1.5;
-  overflow: hidden;
-  position: fixed;
-  inset: 0;
 }
 
 /* Header Title Card */
 .title-card {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 16px;
+  right: 16px;
   background: linear-gradient(135deg, #1E3A5F 0%, #2C5282 100%);
-  border-radius: 20px;
-  padding: 24px 32px;
+  border-radius: 16px;
+  padding: 16px 24px;
   color: white;
   z-index: 100;
   display: flex;
   align-items: center;
-  gap: 20px;
-  box-shadow: 0 10px 40px rgba(30, 58, 95, 0.3);
+  gap: 16px;
+  box-shadow: 0 8px 32px rgba(30, 58, 95, 0.25);
 }
 
 .title-card .tree-icon {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .title-card .tree-icon svg {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   fill: #60A5FA;
 }
 
 .title-card .title-text h1 {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   font-family: 'Reem Kufi', 'Segoe UI', sans-serif;
 }
 
 .title-card .title-text p {
-  font-size: 14px;
+  font-size: 12px;
   opacity: 0.85;
-  font-style: italic;
 }
 
 /* Tree Container */
 .tree-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 60px;
-  overflow: auto;
-  padding: 140px 40px 40px;
+  min-height: 100vh;
+  padding: 100px 20px 80px;
   background: var(--bg-white);
+  overflow-x: auto;
 }
 
 .tree-container::-webkit-scrollbar { width: 8px; height: 8px; }
 .tree-container::-webkit-scrollbar-track { background: transparent; }
 .tree-container::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
 
-/* Tree Structure */
-.tree-level {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  position: relative;
-  padding: 20px 0;
-}
-
-.tree-node {
+/* Tree Node */
+.tree-node-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
-  min-width: 100px;
 }
 
 /* Person Card */
@@ -488,6 +461,7 @@ body {
   align-items: center;
   cursor: pointer;
   transition: transform 0.2s ease;
+  padding: 8px;
 }
 
 .person-node:hover {
@@ -496,17 +470,18 @@ body {
 
 .avatar-container {
   position: relative;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .avatar-ring {
-  width: 70px;
-  height: 70px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   padding: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s;
 }
 
 .avatar-ring.male {
@@ -517,10 +492,6 @@ body {
   background: linear-gradient(135deg, var(--female-color), var(--female-color-light));
 }
 
-.avatar-ring.couple {
-  background: linear-gradient(135deg, var(--couple-color), var(--couple-color-light));
-}
-
 .avatar-inner {
   width: 100%;
   height: 100%;
@@ -529,31 +500,24 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   color: var(--text-primary);
-  overflow: hidden;
-}
-
-.avatar-inner img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .person-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
-  max-width: 120px;
+  max-width: 100px;
   line-height: 1.3;
 }
 
 .person-dates {
-  font-size: 11px;
-  color: var(--text-secondary);
+  font-size: 10px;
   text-align: center;
+  margin-top: 2px;
 }
 
 .person-dates .deceased {
@@ -562,90 +526,121 @@ body {
 
 .person-dates .alive {
   color: var(--couple-color);
+  font-weight: 500;
 }
 
-/* Connection Lines */
-.connector-down {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  height: 30px;
-  background: var(--line-color);
-}
-
-.connector-horizontal {
-  height: 2px;
-  background: var(--line-color);
-  position: absolute;
-  top: 0;
-}
-
-.heart-connector {
-  position: absolute;
-  width: 16px;
-  height: 16px;
+/* Expand Button */
+.expand-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-gray);
+  border: 2px solid var(--line-color);
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
-.heart-connector svg {
-  width: 12px;
-  height: 12px;
-  fill: var(--heart-color);
+.expand-btn:hover {
+  background: var(--male-color);
+  border-color: var(--male-color);
+  color: white;
 }
 
-/* Children Container */
-.children-container {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  padding-top: 30px;
+.expand-btn.expanded {
+  background: var(--male-color);
+  border-color: var(--male-color);
+  color: white;
+  transform: rotate(180deg);
+}
+
+/* Children Container with Lines */
+.children-wrapper {
   position: relative;
+  margin-top: 8px;
+  padding-top: 24px;
 }
 
-.children-container::before {
+/* Vertical line from parent to horizontal line */
+.children-wrapper::before {
   content: '';
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 2px;
-  height: 30px;
+  height: 24px;
   background: var(--line-color);
 }
 
-.children-row {
+/* Heart at junction */
+.junction-heart {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background: var(--bg-white);
+  border-radius: 50%;
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 20px;
-  position: relative;
+  z-index: 5;
 }
 
+.junction-heart svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--heart-color);
+}
+
+/* Children Row with Horizontal Scrolling */
+.children-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  position: relative;
+  padding-top: 20px;
+  overflow-x: auto;
+  max-width: 100vw;
+  padding-bottom: 8px;
+}
+
+.children-row::-webkit-scrollbar { height: 4px; }
+.children-row::-webkit-scrollbar-track { background: transparent; }
+.children-row::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
+
+/* Horizontal line connecting children */
 .children-row::before {
   content: '';
   position: absolute;
   top: 0;
   height: 2px;
   background: var(--line-color);
-  left: calc(50px);
-  right: calc(50px);
+  left: calc(50% - var(--line-width, 0px) / 2);
+  width: var(--line-width, 0px);
 }
 
+/* Child Branch */
 .child-branch {
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+  flex-shrink: 0;
 }
 
+/* Vertical line from horizontal line to child */
 .child-branch::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: -20px;
   left: 50%;
   transform: translateX(-50%);
   width: 2px;
@@ -653,10 +648,65 @@ body {
   background: var(--line-color);
 }
 
-.child-branch .heart-connector {
-  top: 10px;
+/* Heart on child branch */
+.child-heart {
+  position: absolute;
+  top: -10px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background: var(--bg-white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.child-heart svg {
+  width: 10px;
+  height: 10px;
+  fill: var(--heart-color);
+}
+
+/* More Button */
+.more-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  padding: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.more-btn-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--bg-gray), #E5E7EB);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border: 3px solid var(--line-color);
+  transition: all 0.2s;
+}
+
+.more-btn:hover .more-btn-circle {
+  background: linear-gradient(135deg, var(--male-color-light), var(--male-color));
+  color: white;
+  border-color: var(--male-color);
+}
+
+.more-btn-text {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 6px;
 }
 
 /* Bottom Navigation */
@@ -665,14 +715,14 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 64px;
   background: var(--bg-white);
   border-top: 1px solid #E5E7EB;
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 100;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
 }
 
 .nav-btn {
@@ -681,14 +731,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 16px;
+  gap: 4px;
+  padding: 8px 20px;
   cursor: pointer;
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: 500;
   transition: all 0.2s;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .nav-btn:hover {
@@ -696,7 +746,7 @@ body {
 }
 
 .nav-btn .nav-icon {
-  font-size: 20px;
+  font-size: 22px;
 }
 
 .nav-btn.active {
@@ -723,11 +773,12 @@ body {
   display: flex;
   gap: 12px;
   align-items: center;
+  background: var(--bg-white);
 }
 
 .search-input {
   flex: 1;
-  padding: 12px 20px;
+  padding: 14px 20px;
   border: 2px solid #E5E7EB;
   border-radius: 30px;
   background: var(--bg-gray);
@@ -736,11 +787,13 @@ body {
   outline: none;
   direction: rtl;
   font-family: inherit;
+  transition: all 0.2s;
 }
 
 .search-input:focus {
   border-color: var(--male-color);
   background: var(--bg-white);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .search-results {
@@ -761,7 +814,7 @@ body {
   opacity: 0.5;
 }
 
-/* Person Card in Search */
+/* Person Card in Search/Details */
 .search-person {
   display: flex;
   align-items: center;
@@ -777,7 +830,8 @@ body {
 
 .search-person:hover {
   border-color: var(--male-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+  transform: translateY(-1px);
 }
 
 .search-person .mini-avatar {
@@ -849,11 +903,12 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  background: var(--bg-white);
 }
 
-.back-btn {
-  width: 40px;
-  height: 40px;
+.back-btn, .icon-btn {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--bg-gray);
   border: none;
@@ -861,12 +916,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   color: var(--text-primary);
   transition: all 0.2s;
 }
 
-.back-btn:hover {
+.back-btn:hover, .icon-btn:hover {
   background: #E5E7EB;
 }
 
@@ -927,9 +982,10 @@ body {
   align-items: center;
   gap: 6px;
   margin-top: 12px;
-  padding: 6px 16px;
-  border-radius: 20px;
+  padding: 8px 20px;
+  border-radius: 24px;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .detail-status.deceased {
@@ -944,27 +1000,27 @@ body {
 
 .detail-note {
   margin-top: 20px;
-  padding: 16px;
+  padding: 16px 20px;
   background: var(--bg-gray);
-  border-radius: 12px;
+  border-radius: 16px;
   border-right: 4px solid var(--male-color);
   text-align: right;
   color: var(--text-secondary);
-  line-height: 1.7;
+  line-height: 1.8;
 }
 
 .detail-section {
-  margin-top: 24px;
+  margin-top: 28px;
 }
 
 .detail-section-title {
   font-size: 15px;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .detail-section-title::after {
@@ -974,13 +1030,31 @@ body {
   background: #E5E7EB;
 }
 
+.spouse-card {
+  padding: 14px 18px;
+  background: var(--bg-gray);
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
+
+.spouse-card .spouse-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.spouse-card .spouse-note {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
 /* Gradient Bar */
 .gradient-bar {
   position: fixed;
-  bottom: 60px;
+  bottom: 64px;
   left: 0;
   right: 0;
-  height: 8px;
+  height: 6px;
   background: linear-gradient(to left, 
     #3B82F6 0%, 
     #10B981 16%, 
@@ -993,151 +1067,40 @@ body {
   z-index: 99;
 }
 
-/* Icon Button */
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg-gray);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: var(--text-primary);
-  transition: all 0.2s;
-}
-
-.icon-btn:hover {
-  background: #E5E7EB;
-}
-
-/* Family Tree Visual */
-.visual-tree {
-  min-width: max-content;
-  padding: 20px;
-}
-
-.generation {
-  display: flex;
-  justify-content: center;
-  position: relative;
-  margin-bottom: 60px;
-}
-
-.generation-members {
-  display: flex;
-  gap: 30px;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.family-unit {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
-.couple-row {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  position: relative;
-}
-
-.couple-connector {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-.couple-line {
-  width: 30px;
-  height: 2px;
-  background: var(--line-color);
-}
-
-.couple-heart {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-white);
-  z-index: 5;
-}
-
-.couple-heart svg {
-  width: 14px;
-  height: 14px;
-  fill: var(--heart-color);
-}
-
-/* Vertical Tree Lines */
-.tree-line-v {
-  position: absolute;
-  width: 2px;
-  background: var(--line-color);
-}
-
-.tree-line-h {
-  position: absolute;
-  height: 2px;
-  background: var(--line-color);
-}
-
-.tree-junction {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  background: var(--bg-white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.tree-junction svg {
-  width: 12px;
-  height: 12px;
-  fill: var(--heart-color);
-}
-
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .title-card {
-    right: 10px;
-    left: 10px;
-    top: 10px;
-    padding: 16px 20px;
+    right: 12px;
+    left: 12px;
+    top: 12px;
+    padding: 12px 16px;
   }
   
   .title-card .tree-icon {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
   
   .title-card .tree-icon svg {
-    width: 35px;
-    height: 35px;
+    width: 30px;
+    height: 30px;
   }
   
   .title-card .title-text h1 {
-    font-size: 18px;
+    font-size: 15px;
   }
   
   .title-card .title-text p {
-    font-size: 12px;
+    font-size: 10px;
   }
   
   .tree-container {
-    padding: 120px 20px 20px;
+    padding: 90px 12px 80px;
   }
   
   .avatar-ring {
-    width: 55px;
-    height: 55px;
+    width: 52px;
+    height: 52px;
   }
   
   .avatar-inner {
@@ -1145,16 +1108,28 @@ body {
   }
   
   .person-name {
-    font-size: 11px;
-    max-width: 80px;
+    font-size: 10px;
+    max-width: 70px;
   }
   
   .person-dates {
-    font-size: 9px;
+    font-size: 8px;
   }
   
-  .generation-members {
-    gap: 15px;
+  .expand-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+  
+  .children-row {
+    gap: 8px;
+  }
+  
+  .more-btn-circle {
+    width: 52px;
+    height: 52px;
+    font-size: 14px;
   }
 }
 `;
@@ -1177,179 +1152,193 @@ const HeartIcon = () => (
   </svg>
 );
 
+const ChevronDownIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
+
 // ==================== PERSON NODE COMPONENT ====================
-function PersonNode({ person, onClick, size = 'normal' }: { person: any; onClick: () => void; size?: 'normal' | 'small' }) {
-  const isSmall = size === 'small';
-  const ringSize = isSmall ? 55 : 70;
-  const fontSize = isSmall ? 18 : 24;
-  const nameSize = isSmall ? 11 : 13;
-  const dateSize = isSmall ? 9 : 11;
-  
+interface PersonNodeProps {
+  person: any;
+  onClick: () => void;
+  hasChildren: boolean;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+}
+
+function PersonNode({ person, onClick, hasChildren, isExpanded, onToggleExpand }: PersonNodeProps) {
   return (
-    <div className="person-node" onClick={onClick}>
-      <div className="avatar-container">
-        <div 
-          className={`avatar-ring ${person.gender === 'female' ? 'female' : 'male'}`}
-          style={{ width: ringSize, height: ringSize }}
-        >
-          <div className="avatar-inner" style={{ fontSize }}>
+    <div className="person-node">
+      <div className="avatar-container" onClick={onClick}>
+        <div className={`avatar-ring ${person.gender === 'female' ? 'female' : 'male'}`}>
+          <div className="avatar-inner">
             {getInitial(person.name)}
           </div>
         </div>
       </div>
-      <div className="person-name" style={{ fontSize: nameSize }}>
+      <div className="person-name" onClick={onClick}>
         {shortenName(person.name)}
       </div>
-      <div className="person-dates" style={{ fontSize: dateSize }}>
+      <div className="person-dates">
         {person.deceased ? (
           <span className="deceased">رحمه الله</span>
         ) : (
           <span className="alive">حفظه الله</span>
         )}
       </div>
+      {hasChildren && (
+        <button 
+          className={`expand-btn ${isExpanded ? 'expanded' : ''}`}
+          onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
+          aria-label={isExpanded ? 'Collapse' : 'Expand'}
+        >
+          <ChevronDownIcon />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ==================== TREE NODE COMPONENT ====================
+interface TreeNodeProps {
+  person: any;
+  onSelectPerson: (id: string) => void;
+  expandedNodes: Set<string>;
+  toggleExpand: (id: string) => void;
+  visibleChildrenCount: { [key: string]: number };
+  showMoreChildren: (id: string) => void;
+  level?: number;
+}
+
+function TreeNode({ 
+  person, 
+  onSelectPerson, 
+  expandedNodes, 
+  toggleExpand,
+  visibleChildrenCount,
+  showMoreChildren,
+  level = 0
+}: TreeNodeProps) {
+  const childrenIds = person.children || [];
+  const children = childrenIds.map((id: string) => people[id]).filter(Boolean);
+  const hasChildren = children.length > 0;
+  const isExpanded = expandedNodes.has(person.id);
+  
+  const visibleCount = visibleChildrenCount[person.id] || 5;
+  const visibleChildren = children.slice(0, visibleCount);
+  const remainingCount = children.length - visibleCount;
+  const showMoreButton = remainingCount > 0 && isExpanded;
+
+  // Calculate line width based on visible children
+  const childRowRef = useRef<HTMLDivElement>(null);
+  const [lineWidth, setLineWidth] = useState(0);
+  
+  useEffect(() => {
+    if (childRowRef.current && isExpanded && visibleChildren.length > 1) {
+      const childElements = childRowRef.current.querySelectorAll('.child-branch');
+      if (childElements.length >= 2) {
+        const first = childElements[0] as HTMLElement;
+        const last = childElements[childElements.length - 1] as HTMLElement;
+        const firstCenter = first.offsetLeft + first.offsetWidth / 2;
+        const lastCenter = last.offsetLeft + last.offsetWidth / 2;
+        setLineWidth(Math.abs(lastCenter - firstCenter));
+      }
+    }
+  }, [isExpanded, visibleChildren.length]);
+
+  return (
+    <div className="tree-node-wrapper">
+      <PersonNode 
+        person={person}
+        onClick={() => onSelectPerson(person.id)}
+        hasChildren={hasChildren}
+        isExpanded={isExpanded}
+        onToggleExpand={() => toggleExpand(person.id)}
+      />
+      
+      {hasChildren && isExpanded && (
+        <div className="children-wrapper">
+          <div className="junction-heart">
+            <HeartIcon />
+          </div>
+          
+          <div 
+            className="children-row" 
+            ref={childRowRef}
+            style={{ '--line-width': `${lineWidth}px` } as React.CSSProperties}
+          >
+            {visibleChildren.map((child: any) => (
+              <div key={child.id} className="child-branch">
+                <div className="child-heart">
+                  <HeartIcon />
+                </div>
+                <TreeNode
+                  person={child}
+                  onSelectPerson={onSelectPerson}
+                  expandedNodes={expandedNodes}
+                  toggleExpand={toggleExpand}
+                  visibleChildrenCount={visibleChildrenCount}
+                  showMoreChildren={showMoreChildren}
+                  level={level + 1}
+                />
+              </div>
+            ))}
+            
+            {showMoreButton && (
+              <div className="child-branch">
+                <div className="child-heart">
+                  <HeartIcon />
+                </div>
+                <div className="more-btn" onClick={() => showMoreChildren(person.id)}>
+                  <div className="more-btn-circle">+{remainingCount}</div>
+                  <span className="more-btn-text">عرض المزيد</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ==================== TREE VIEW COMPONENT ====================
 function TreeView({ onSelectPerson }: { onSelectPerson: (id: string) => void }) {
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(['root']));
+  const [visibleChildrenCount, setVisibleChildrenCount] = useState<{ [key: string]: number }>({});
+  
   const root = people['root'];
-  const rootChildren = (root.children || []).map((id: string) => people[id]).filter(Boolean);
+  
+  const toggleExpand = useCallback((id: string) => {
+    setExpandedNodes(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const showMoreChildren = useCallback((id: string) => {
+    setVisibleChildrenCount(prev => ({
+      ...prev,
+      [id]: (prev[id] || 5) + 5
+    }));
+  }, []);
 
   return (
-    <div className="visual-tree">
-      {/* Root Generation */}
-      <div className="generation">
-        <div className="family-unit">
-          <PersonNode person={root} onClick={() => onSelectPerson(root.id)} />
-          
-          {/* Connection line to children */}
-          {rootChildren.length > 0 && (
-            <div style={{ 
-              width: 2, 
-              height: 30, 
-              background: 'var(--line-color)', 
-              margin: '10px auto' 
-            }} />
-          )}
-        </div>
-      </div>
-
-      {/* First Generation Children */}
-      {rootChildren.length > 0 && (
-        <div className="generation">
-          <div style={{ position: 'relative' }}>
-            {/* Horizontal connector line */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 50,
-              right: 50,
-              height: 2,
-              background: 'var(--line-color)'
-            }} />
-            
-            <div className="generation-members" style={{ paddingTop: 20 }}>
-              {rootChildren.slice(0, 6).map((child: any, index: number) => (
-                <div key={child.id} className="family-unit">
-                  {/* Vertical connector */}
-                  <div style={{
-                    width: 2,
-                    height: 20,
-                    background: 'var(--line-color)',
-                    position: 'absolute',
-                    top: 0,
-                    left: '50%',
-                    transform: 'translateX(-50%)'
-                  }} />
-                  
-                  {/* Heart connector */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 10,
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    background: 'var(--bg-white)',
-                    width: 16,
-                    height: 16,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 5
-                  }}>
-                    <HeartIcon />
-                  </div>
-                  
-                  <PersonNode 
-                    person={child} 
-                    onClick={() => onSelectPerson(child.id)}
-                    size="small"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Show more children indicator */}
-      {rootChildren.length > 6 && (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '20px',
-          color: 'var(--text-secondary)',
-          fontSize: 14
-        }}>
-          +{rootChildren.length - 6} more family members
-        </div>
-      )}
-
-      {/* Second Generation Preview */}
-      {rootChildren.slice(0, 3).map((child: any) => {
-        const grandchildren = (child.children || []).map((id: string) => people[id]).filter(Boolean);
-        if (grandchildren.length === 0) return null;
-        
-        return (
-          <div key={`gen2-${child.id}`} className="generation" style={{ marginTop: 20 }}>
-            <div style={{ position: 'relative' }}>
-              <div style={{ 
-                textAlign: 'center', 
-                marginBottom: 10,
-                fontSize: 12,
-                color: 'var(--text-secondary)'
-              }}>
-                أبناء {shortenName(child.name)}
-              </div>
-              <div className="generation-members">
-                {grandchildren.slice(0, 5).map((gc: any) => (
-                  <PersonNode 
-                    key={gc.id}
-                    person={gc} 
-                    onClick={() => onSelectPerson(gc.id)}
-                    size="small"
-                  />
-                ))}
-                {grandchildren.length > 5 && (
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 55,
-                    height: 55,
-                    borderRadius: '50%',
-                    background: 'var(--bg-gray)',
-                    fontSize: 14,
-                    color: 'var(--text-secondary)',
-                    cursor: 'pointer'
-                  }} onClick={() => onSelectPerson(child.id)}>
-                    +{grandchildren.length - 5}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      })}
+    <div style={{ display: 'flex', justifyContent: 'center', minWidth: 'max-content', padding: '20px' }}>
+      <TreeNode
+        person={root}
+        onSelectPerson={onSelectPerson}
+        expandedNodes={expandedNodes}
+        toggleExpand={toggleExpand}
+        visibleChildrenCount={visibleChildrenCount}
+        showMoreChildren={showMoreChildren}
+      />
     </div>
   );
 }
@@ -1374,7 +1363,7 @@ function DetailPanel({ person, open, onClose, onNavigate }: {
         <button className="back-btn" onClick={onClose} aria-label="Close">
           &#8592;
         </button>
-        <span style={{ fontWeight: 600 }}>تفاصيل الشخص</span>
+        <span style={{ fontWeight: 600, fontSize: 17 }}>تفاصيل الشخص</span>
       </header>
       
       <div className="detail-content">
@@ -1419,14 +1408,9 @@ function DetailPanel({ person, open, onClose, onNavigate }: {
               {person.gender === 'female' ? 'الزوج' : (spouses.length > 1 ? 'الزوجات' : 'الزوجة')}
             </div>
             {spouses.map((s: any, i: number) => (
-              <div key={i} style={{
-                padding: '12px 16px',
-                background: 'var(--bg-gray)',
-                borderRadius: 12,
-                marginBottom: 8
-              }}>
-                <div style={{ fontWeight: 600, marginBottom: 4 }}>{s.name}</div>
-                {s.note && <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{s.note}</div>}
+              <div key={i} className="spouse-card">
+                <div className="spouse-name">{s.name}</div>
+                {s.note && <div className="spouse-note">{s.note}</div>}
               </div>
             ))}
           </div>
