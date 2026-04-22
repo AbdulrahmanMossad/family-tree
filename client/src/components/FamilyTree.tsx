@@ -804,7 +804,7 @@ function DetailPanel({ personId, onClose, onNavigate }: {
         )}
 
         {children.length > 0 && (
-          <div style={{ marginBottom: 30 }}>
+          <div style={{ marginBottom: 40 }}>
             <div style={{ fontSize: 10, color: '#6b7280', fontFamily: "'Segoe UI', sans-serif", marginBottom: 4, fontWeight: 600, textTransform: 'uppercase' }}>
               الأبناء ({children.length})
             </div>
