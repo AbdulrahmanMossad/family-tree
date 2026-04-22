@@ -9,6 +9,8 @@ const people: any = {
     note: "الجد الأكبر الموثق لعائلة المقمر. توفي سنة 1949 رحمه الله. وله ذرية كثيرة انتشرت في زفتي والبحيرة وبورسعيد وأسوان ومصر كلها.",
     gender: "male",
     deceased: true,
+    birthYear: "1880",
+    deathYear: "1949",
     spouses: [
       { name: "خضرة", note: "من أوائل زوجاته" },
       { name: "الحاجة مسعدة العشماوي شعلان", note: "من نهطاي - آخر زوجاته - توفيت 1995" }
@@ -346,7 +348,9 @@ function shortenName(name: string): string {
   for (const t of TITLES) {
     if (clean.startsWith(t + ' ')) { clean = clean.substring(t.length + 1); break; }
   }
-  return clean.split(/\s+/).slice(0, 2).join(' ');
+  const parts = clean.split(/\s+/);
+  if (parts.length <= 2) return clean;
+  return parts.slice(0, 2).join(' ');
 }
 
 function getSiblings(personId: string): any[] {
@@ -371,607 +375,1115 @@ function buildAncestry(id: string): any[] {
   return chain;
 }
 
-// ==================== STYLES (injected once) ====================
+// ==================== STYLES ====================
 const STYLES = `
 :root {
-  --ink: #2b1810;
-  --ink-soft: #4a3529;
-  --paper: #faf3e7;
-  --paper-warm: #f4e8d1;
-  --paper-deep: #ecdfc3;
-  --gold: #b08d3f;
-  --gold-deep: #8a6a25;
-  --gold-light: #d4b76a;
-  --olive: #5a6a3e;
-  --rust: #a0451f;
-  --shadow: rgba(43, 24, 16, 0.12);
-  --shadow-deep: rgba(43, 24, 16, 0.25);
-  --line: #d9c9a8;
+  --male-color: #3B82F6;
+  --male-color-light: #60A5FA;
+  --female-color: #EC4899;
+  --female-color-light: #F472B6;
+  --couple-color: #10B981;
+  --couple-color-light: #34D399;
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --bg-white: #FFFFFF;
+  --bg-gray: #F9FAFB;
+  --line-color: #9CA3AF;
+  --heart-color: #10B981;
 }
+
 .fm-root * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-.fm-root { direction: rtl; }
+.fm-root { direction: rtl; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 html, body, #root { height: 100%; overscroll-behavior: none; }
 body {
-  font-family: 'Markazi Text', 'Amiri', serif;
-  background: var(--paper);
-  color: var(--ink);
-  font-size: 18px;
-  line-height: 1.6;
+  background: var(--bg-white);
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.5;
   overflow: hidden;
-  background-image:
-    radial-gradient(circle at 15% 15%, rgba(176, 141, 63, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 85% 85%, rgba(160, 69, 31, 0.06) 0%, transparent 45%);
   position: fixed;
   inset: 0;
 }
-.topbar {
-  position: fixed; top: 0; left: 0; right: 0; height: 60px;
-  background: rgba(250, 243, 231, 0.92);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px; z-index: 50;
-}
-.topbar-title {
-  font-family: 'Reem Kufi', sans-serif; font-weight: 700; font-size: 20px;
-  color: var(--ink); display: flex; align-items: center; gap: 10px;
-}
-.topbar-title::before { content: "❋"; color: var(--gold); font-size: 18px; }
-.icon-btn {
-  width: 44px; height: 44px; border-radius: 50%;
-  background: transparent; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: var(--ink); transition: all 0.2s;
-}
-.icon-btn:hover { background: var(--paper-warm); }
-.icon-btn:active { transform: scale(0.92); }
-.icon-btn.hidden { visibility: hidden; }
 
-.stage {
-  position: fixed; top: 60px; left: 0; right: 0; bottom: 0;
-  overflow-y: auto; overflow-x: hidden;
-  padding: 24px 16px 100px;
-  -webkit-overflow-scrolling: touch;
+/* Header Title Card */
+.title-card {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #1E3A5F 0%, #2C5282 100%);
+  border-radius: 20px;
+  padding: 24px 32px;
+  color: white;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 10px 40px rgba(30, 58, 95, 0.3);
 }
-.stage::-webkit-scrollbar { width: 6px; }
-.stage::-webkit-scrollbar-track { background: transparent; }
-.stage::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
-.stage.has-trail { top: 110px; padding-top: 20px; }
 
-.stage-inner {
-  max-width: 560px; margin: 0 auto;
-  animation: fadeSlide 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+.title-card .tree-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-@keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.view-transition-out { animation: fadeOut 0.2s forwards; }
-@keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
 
-.hero {
-  background: linear-gradient(160deg, #fffdf7 0%, var(--paper-warm) 100%);
-  border-radius: 24px; padding: 36px 28px 32px;
-  box-shadow: 0 12px 40px var(--shadow-deep), 0 0 0 1px var(--line);
-  text-align: center; position: relative; overflow: hidden; margin-bottom: 24px;
+.title-card .tree-icon svg {
+  width: 50px;
+  height: 50px;
+  fill: #60A5FA;
 }
-.hero::before {
-  content: ""; position: absolute; top: -60px; right: -60px;
-  width: 180px; height: 180px;
-  background: radial-gradient(circle, rgba(176, 141, 63, 0.15), transparent);
-  border-radius: 50%;
+
+.title-card .title-text h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-family: 'Reem Kufi', 'Segoe UI', sans-serif;
 }
-.hero::after {
-  content: ""; position: absolute; bottom: -80px; left: -60px;
-  width: 200px; height: 200px;
-  background: radial-gradient(circle, rgba(160, 69, 31, 0.08), transparent);
-  border-radius: 50%;
+
+.title-card .title-text p {
+  font-size: 14px;
+  opacity: 0.85;
+  font-style: italic;
 }
+
+/* Tree Container */
+.tree-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 60px;
+  overflow: auto;
+  padding: 140px 40px 40px;
+  background: var(--bg-white);
+}
+
+.tree-container::-webkit-scrollbar { width: 8px; height: 8px; }
+.tree-container::-webkit-scrollbar-track { background: transparent; }
+.tree-container::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+
+/* Tree Structure */
+.tree-level {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  position: relative;
+  padding: 20px 0;
+}
+
+.tree-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  min-width: 100px;
+}
+
+/* Person Card */
+.person-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.person-node:hover {
+  transform: scale(1.05);
+}
+
+.avatar-container {
+  position: relative;
+  margin-bottom: 8px;
+}
+
 .avatar-ring {
-  width: 120px; height: 120px; border-radius: 50%;
-  margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-ring.male {
+  background: linear-gradient(135deg, var(--male-color), var(--male-color-light));
+}
+
+.avatar-ring.female {
+  background: linear-gradient(135deg, var(--female-color), var(--female-color-light));
+}
+
+.avatar-ring.couple {
+  background: linear-gradient(135deg, var(--couple-color), var(--couple-color-light));
+}
+
+.avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+.avatar-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.person-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  max-width: 120px;
+  line-height: 1.3;
+}
+
+.person-dates {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.person-dates .deceased {
+  color: var(--text-secondary);
+}
+
+.person-dates .alive {
+  color: var(--couple-color);
+}
+
+/* Connection Lines */
+.connector-down {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 30px;
+  background: var(--line-color);
+}
+
+.connector-horizontal {
+  height: 2px;
+  background: var(--line-color);
+  position: absolute;
+  top: 0;
+}
+
+.heart-connector {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.heart-connector svg {
+  width: 12px;
+  height: 12px;
+  fill: var(--heart-color);
+}
+
+/* Children Container */
+.children-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  padding-top: 30px;
   position: relative;
-  background: linear-gradient(135deg, var(--gold-light), var(--gold-deep));
-  padding: 4px; box-shadow: 0 8px 24px rgba(176, 141, 63, 0.3);
-}
-.avatar {
-  width: 100%; height: 100%; border-radius: 50%;
-  background: var(--paper);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Reem Kufi', sans-serif; font-weight: 600; font-size: 42px; color: var(--ink);
-}
-.avatar.female { background: linear-gradient(135deg, #fff, #f5e4d4); }
-.avatar.male { background: linear-gradient(135deg, #fff, #e8ebd9); }
-.status-dot {
-  position: absolute; bottom: 8px; left: 8px;
-  width: 26px; height: 26px; border-radius: 50%;
-  background: var(--paper);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; box-shadow: 0 2px 6px var(--shadow); color: var(--gold-deep);
-}
-.hero-name {
-  font-family: 'Reem Kufi', sans-serif; font-size: 26px; font-weight: 700;
-  color: var(--ink); line-height: 1.35; margin-bottom: 6px; position: relative;
-}
-.hero-nickname {
-  font-family: 'Amiri', serif; font-size: 17px; font-style: italic;
-  color: var(--gold-deep); position: relative;
-}
-.hero-meta {
-  display: inline-flex; align-items: center; gap: 6px;
-  margin-top: 10px; margin-inline-end: 6px;
-  padding: 5px 14px; border-radius: 20px;
-  background: rgba(176, 141, 63, 0.12);
-  font-size: 14px; color: var(--gold-deep);
-  font-family: 'Amiri', serif; position: relative;
-}
-.hero-note {
-  margin-top: 18px; padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.6); border-radius: 14px;
-  border-right: 3px solid var(--gold);
-  font-size: 16px; color: var(--ink-soft); text-align: right;
-  line-height: 1.7; position: relative;
 }
 
-.rel-section { margin-bottom: 20px; }
-.rel-title {
-  font-family: 'Reem Kufi', sans-serif; font-size: 15px; font-weight: 600;
-  color: var(--gold-deep); margin: 0 4px 10px;
-  display: flex; align-items: center; gap: 8px;
-}
-.rel-title::after {
-  content: ""; flex: 1; height: 1px;
-  background: linear-gradient(to left, var(--line), transparent);
-}
-.rel-count {
-  background: var(--paper-warm); color: var(--gold-deep);
-  padding: 1px 10px; border-radius: 10px; font-size: 12px;
+.children-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 30px;
+  background: var(--line-color);
 }
 
-.person-btn {
-  width: 100%; display: flex; align-items: center; gap: 14px;
-  padding: 14px 16px; background: #fffdf7;
-  border: 1px solid var(--line); border-radius: 16px;
-  cursor: pointer; text-align: right;
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 8px; font-family: inherit;
-  position: relative; box-shadow: 0 1px 3px var(--shadow);
-}
-.person-btn:hover {
-  transform: translateX(-4px);
-  box-shadow: 0 6px 18px var(--shadow);
-  border-color: var(--gold-light); background: #fff;
-}
-.person-btn:active { transform: scale(0.98); }
-.mini-avatar {
-  width: 48px; height: 48px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--paper-warm), var(--paper-deep));
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Reem Kufi', sans-serif; font-weight: 600; font-size: 20px;
-  color: var(--ink); flex-shrink: 0;
-  border: 2px solid var(--paper); box-shadow: 0 2px 6px var(--shadow);
+.children-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
   position: relative;
 }
-.mini-avatar.male { background: linear-gradient(135deg, #f0f2e0, #d9e0c2); }
-.mini-avatar.female { background: linear-gradient(135deg, #fce4d0, #f4c9a8); }
-.mini-avatar.deceased::after {
-  content: "۞"; position: absolute; bottom: -2px; left: -2px;
-  font-size: 12px; color: var(--gold-deep);
-  background: var(--paper); border-radius: 50%;
-  width: 18px; height: 18px;
-  display: flex; align-items: center; justify-content: center;
-  border: 1px solid var(--line);
-}
-.person-btn .info { flex: 1; min-width: 0; }
-.person-btn .p-name {
-  font-family: 'Reem Kufi', sans-serif; font-weight: 600; font-size: 16px;
-  color: var(--ink); margin-bottom: 2px; line-height: 1.3;
-}
-.person-btn .p-sub {
-  font-family: 'Amiri', serif; font-size: 13px; color: var(--gold-deep);
-  font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.person-btn .chevron {
-  color: var(--gold); font-size: 20px; flex-shrink: 0; transition: transform 0.2s;
-}
-.person-btn:hover .chevron { transform: translateX(-3px); }
 
-.info-list {
-  background: #fffdf7; border: 1px solid var(--line);
-  border-radius: 16px; padding: 4px 0; box-shadow: 0 1px 3px var(--shadow);
-}
-.info-item {
-  padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px;
-  border-bottom: 1px dashed var(--line);
-}
-.info-item:last-child { border-bottom: none; }
-.info-item .icon { color: var(--gold); font-size: 18px; margin-top: 2px; }
-.info-item .text { flex: 1; font-size: 16px; color: var(--ink); line-height: 1.5; }
-.info-item .sub {
-  font-size: 13px; color: var(--gold-deep); margin-top: 2px;
-  font-family: 'Amiri', serif; font-style: italic;
+.children-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  height: 2px;
+  background: var(--line-color);
+  left: calc(50px);
+  right: calc(50px);
 }
 
-.trail {
-  position: fixed; top: 60px; left: 0; right: 0;
-  background: rgba(250, 243, 231, 0.95);
-  backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
-  padding: 10px 16px; z-index: 40;
-  display: flex; gap: 6px; align-items: center;
-  overflow-x: auto; white-space: nowrap;
-  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+.child-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
 }
-.trail::-webkit-scrollbar { display: none; }
-.trail.hidden { display: none; }
-.trail-item {
-  background: transparent; border: 1px solid var(--line);
-  color: var(--ink-soft); padding: 4px 12px; border-radius: 14px;
-  font-size: 13px; font-family: 'Reem Kufi', sans-serif;
-  cursor: pointer; flex-shrink: 0; transition: all 0.2s;
-}
-.trail-item:hover { background: var(--paper-warm); }
-.trail-item.current {
-  background: var(--ink); color: var(--paper); border-color: var(--ink);
-}
-.trail-separator { color: var(--gold); flex-shrink: 0; font-size: 12px; }
 
+.child-branch::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 20px;
+  background: var(--line-color);
+}
+
+.child-branch .heart-connector {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Bottom Navigation */
 .bottomnav {
-  position: fixed; bottom: 0; left: 0; right: 0; height: 72px;
-  background: rgba(250, 243, 231, 0.95);
-  backdrop-filter: blur(14px); border-top: 1px solid var(--line);
-  display: flex; justify-content: space-around; align-items: center;
-  padding: 0 8px 6px; z-index: 50;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: var(--bg-white);
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
 }
+
 .nav-btn {
-  background: transparent; border: none;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 8px 14px; cursor: pointer; color: var(--ink-soft);
-  font-family: 'Reem Kufi', sans-serif; font-size: 12px; font-weight: 500;
-  transition: all 0.2s; border-radius: 12px; min-width: 64px;
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 16px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-radius: 8px;
 }
-.nav-btn:hover { background: var(--paper-warm); }
-.nav-btn .nav-icon { font-size: 22px; line-height: 1; }
-.nav-btn.active { color: var(--gold-deep); }
-.nav-btn.active .nav-icon { transform: scale(1.1); }
 
-.search-overlay, .about-overlay {
-  position: fixed; inset: 0; background: var(--paper); z-index: 100;
-  display: none; flex-direction: column; padding-bottom: 72px;
+.nav-btn:hover {
+  background: var(--bg-gray);
 }
-.search-overlay.open, .about-overlay.open { display: flex; animation: fadeIn 0.25s; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.search-header, .about-header {
-  padding: 16px; background: var(--paper);
-  border-bottom: 1px solid var(--line);
-  display: flex; gap: 10px; align-items: center;
+
+.nav-btn .nav-icon {
+  font-size: 20px;
 }
+
+.nav-btn.active {
+  color: var(--male-color);
+}
+
+/* Search Overlay */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-white);
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+}
+
+.search-overlay.open {
+  display: flex;
+}
+
+.search-header {
+  padding: 16px;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 .search-input {
-  flex: 1; padding: 12px 18px;
-  border: 1.5px solid var(--line); border-radius: 24px;
-  background: #fff; font-family: inherit; font-size: 18px;
-  color: var(--ink); outline: none; direction: rtl;
+  flex: 1;
+  padding: 12px 20px;
+  border: 2px solid #E5E7EB;
+  border-radius: 30px;
+  background: var(--bg-gray);
+  font-size: 16px;
+  color: var(--text-primary);
+  outline: none;
+  direction: rtl;
+  font-family: inherit;
 }
+
 .search-input:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 4px rgba(176, 141, 63, 0.1);
+  border-color: var(--male-color);
+  background: var(--bg-white);
 }
-.search-results { flex: 1; overflow-y: auto; padding: 16px; }
+
+.search-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
 .search-empty {
-  text-align: center; padding: 60px 20px;
-  color: var(--gold-deep); font-family: 'Amiri', serif;
-  font-style: italic; font-size: 17px;
-}
-.search-empty .big-icon {
-  font-size: 64px; display: block; margin-bottom: 16px; opacity: 0.3;
-}
-.about-content { flex: 1; overflow-y: auto; padding: 20px 20px 40px; }
-.about-inner { max-width: 620px; margin: 0 auto; }
-.about-inner h2 {
-  font-family: 'Reem Kufi', sans-serif; color: var(--ink);
-  font-size: 28px; margin-bottom: 6px;
-}
-.about-inner h3 {
-  font-family: 'Reem Kufi', sans-serif; color: var(--gold-deep);
-  font-size: 20px; margin: 24px 0 10px;
-  display: flex; align-items: center; gap: 8px;
-}
-.about-inner h3::before { content: "❋"; color: var(--gold); }
-.about-inner p { margin-bottom: 12px; line-height: 1.9; }
-.about-inner .quote {
-  font-family: 'Amiri', serif; font-style: italic;
-  background: var(--paper-warm); padding: 16px 20px;
-  border-radius: 12px; border-right: 3px solid var(--gold);
-  margin: 18px 0; font-size: 17px;
-}
-.stat-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px; margin: 16px 0;
-}
-.stat-card {
-  background: #fffdf7; border: 1px solid var(--line);
-  border-radius: 14px; padding: 14px; text-align: center;
-}
-.stat-card .num {
-  font-family: 'Reem Kufi', sans-serif; font-size: 28px;
-  font-weight: 700; color: var(--gold-deep);
-}
-.stat-card .lbl {
-  font-size: 13px; color: var(--ink-soft); font-family: 'Amiri', serif;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
 }
 
-.welcome { text-align: center; padding: 30px 0 20px; }
-.welcome .greeting {
-  font-family: 'Amiri', serif; color: var(--gold-deep);
-  font-style: italic; font-size: 16px; margin-bottom: 4px;
+.search-empty .icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
 }
-.welcome .welcome-title {
-  font-family: 'Reem Kufi', sans-serif; font-size: 30px; font-weight: 700;
-  color: var(--ink); line-height: 1.3;
-}
-.welcome .ornament { color: var(--gold); margin: 12px 0; letter-spacing: 12px; }
 
-.cta-card {
-  background: linear-gradient(145deg, var(--ink), var(--ink-soft));
-  color: var(--paper); border-radius: 20px; padding: 24px;
-  text-align: right; cursor: pointer; transition: all 0.2s;
-  box-shadow: 0 8px 24px rgba(43, 24, 16, 0.2);
-  position: relative; overflow: hidden; margin-bottom: 16px;
-  border: none; width: 100%; font-family: inherit;
+/* Person Card in Search */
+.search-person {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--bg-white);
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: all 0.2s;
 }
-.cta-card::before {
-  content: ""; position: absolute; top: -40px; left: -40px;
-  width: 140px; height: 140px;
-  background: radial-gradient(circle, rgba(176, 141, 63, 0.25), transparent);
+
+.search-person:hover {
+  border-color: var(--male-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.search-person .mini-avatar {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-}
-.cta-card:active { transform: scale(0.98); }
-.cta-card .label {
-  font-family: 'Amiri', serif; color: var(--gold-light);
-  font-size: 14px; font-style: italic; margin-bottom: 6px; position: relative;
-}
-.cta-card .title {
-  font-family: 'Reem Kufi', sans-serif; font-size: 22px;
-  font-weight: 700; margin-bottom: 4px; position: relative;
-}
-.cta-card .subtitle { font-size: 15px; opacity: 0.8; position: relative; }
-.cta-card .arrow {
-  position: absolute; left: 20px; top: 50%;
-  transform: translateY(-50%); font-size: 24px; color: var(--gold-light);
+  padding: 2px;
+  flex-shrink: 0;
 }
 
-.quick-links {
-  display: grid; grid-template-columns: repeat(2, 1fr);
-  gap: 10px; margin-top: 20px;
+.search-person .mini-avatar.male {
+  background: linear-gradient(135deg, var(--male-color), var(--male-color-light));
 }
-.quick-link {
-  background: #fffdf7; border: 1px solid var(--line);
-  padding: 16px 14px; border-radius: 14px;
-  cursor: pointer; text-align: center; transition: all 0.2s;
-  font-family: 'Reem Kufi', sans-serif;
-}
-.quick-link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px var(--shadow);
-  border-color: var(--gold-light);
-}
-.quick-link .ql-icon { font-size: 24px; display: block; margin-bottom: 6px; }
-.quick-link .ql-name { font-size: 14px; font-weight: 600; color: var(--ink); }
-.quick-link .ql-desc { font-size: 12px; color: var(--gold-deep); margin-top: 2px; }
 
-@media (max-width: 480px) {
-  .hero { padding: 28px 20px 24px; border-radius: 20px; }
-  .hero-name { font-size: 22px; }
-  .avatar-ring { width: 100px; height: 100px; }
-  .avatar { font-size: 36px; }
-  .person-btn { padding: 12px 14px; }
-  .mini-avatar { width: 44px; height: 44px; font-size: 18px; }
-  .person-btn .p-name { font-size: 15px; }
-  .stage { padding: 20px 14px 100px; }
-  .welcome .welcome-title { font-size: 24px; }
-  .cta-card { padding: 20px; }
-  .cta-card .title { font-size: 18px; }
+.search-person .mini-avatar.female {
+  background: linear-gradient(135deg, var(--female-color), var(--female-color-light));
 }
-@media (hover: none) {
-  .person-btn:hover { transform: none; }
+
+.search-person .mini-avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.search-person .info {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-person .name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.search-person .sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Detail Panel */
+.detail-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-white);
+  z-index: 150;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-panel.open {
+  display: flex;
+}
+
+.detail-header {
+  padding: 16px;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-gray);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--text-primary);
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: #E5E7EB;
+}
+
+.detail-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.detail-hero {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.detail-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  padding: 4px;
+  margin: 0 auto 16px;
+}
+
+.detail-avatar.male {
+  background: linear-gradient(135deg, var(--male-color), var(--male-color-light));
+}
+
+.detail-avatar.female {
+  background: linear-gradient(135deg, var(--female-color), var(--female-color-light));
+}
+
+.detail-avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  font-weight: 600;
+}
+
+.detail-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.detail-nickname {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.detail-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.detail-status.deceased {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.detail-status.alive {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.detail-note {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--bg-gray);
+  border-radius: 12px;
+  border-right: 4px solid var(--male-color);
+  text-align: right;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.detail-section {
+  margin-top: 24px;
+}
+
+.detail-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #E5E7EB;
+}
+
+/* Gradient Bar */
+.gradient-bar {
+  position: fixed;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(to left, 
+    #3B82F6 0%, 
+    #10B981 16%, 
+    #84CC16 32%, 
+    #EAB308 48%, 
+    #F97316 64%, 
+    #EF4444 80%, 
+    #EC4899 100%
+  );
+  z-index: 99;
+}
+
+/* Icon Button */
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-gray);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--text-primary);
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  background: #E5E7EB;
+}
+
+/* Family Tree Visual */
+.visual-tree {
+  min-width: max-content;
+  padding: 20px;
+}
+
+.generation {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 60px;
+}
+
+.generation-members {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.family-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.couple-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  position: relative;
+}
+
+.couple-connector {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.couple-line {
+  width: 30px;
+  height: 2px;
+  background: var(--line-color);
+}
+
+.couple-heart {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-white);
+  z-index: 5;
+}
+
+.couple-heart svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--heart-color);
+}
+
+/* Vertical Tree Lines */
+.tree-line-v {
+  position: absolute;
+  width: 2px;
+  background: var(--line-color);
+}
+
+.tree-line-h {
+  position: absolute;
+  height: 2px;
+  background: var(--line-color);
+}
+
+.tree-junction {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: var(--bg-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tree-junction svg {
+  width: 12px;
+  height: 12px;
+  fill: var(--heart-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .title-card {
+    right: 10px;
+    left: 10px;
+    top: 10px;
+    padding: 16px 20px;
+  }
+  
+  .title-card .tree-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .title-card .tree-icon svg {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .title-card .title-text h1 {
+    font-size: 18px;
+  }
+  
+  .title-card .title-text p {
+    font-size: 12px;
+  }
+  
+  .tree-container {
+    padding: 120px 20px 20px;
+  }
+  
+  .avatar-ring {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .avatar-inner {
+    font-size: 18px;
+  }
+  
+  .person-name {
+    font-size: 11px;
+    max-width: 80px;
+  }
+  
+  .person-dates {
+    font-size: 9px;
+  }
+  
+  .generation-members {
+    gap: 15px;
+  }
 }
 `;
 
-// ==================== SUB-COMPONENTS ====================
-function PersonButton({ person, label, subtext, onClick }: { person: any; label?: any; subtext?: any; onClick: () => void }) {
-  const avatarClass = person.gender === 'female' ? 'female' : 'male';
-  const deceased = person.deceased ? ' deceased' : '';
-  const sub = label || subtext || person.nickname || '';
+// ==================== SVG ICONS ====================
+const TreeIcon = () => (
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="35" r="30" fill="currentColor" opacity="0.3"/>
+    <circle cx="30" cy="45" r="20" fill="currentColor" opacity="0.4"/>
+    <circle cx="70" cy="45" r="20" fill="currentColor" opacity="0.4"/>
+    <circle cx="50" cy="25" r="22" fill="currentColor" opacity="0.5"/>
+    <rect x="45" y="55" width="10" height="30" fill="#8B5A2B"/>
+    <rect x="35" y="85" width="30" height="5" rx="2" fill="#8B5A2B"/>
+  </svg>
+);
 
+const HeartIcon = () => (
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+  </svg>
+);
+
+// ==================== PERSON NODE COMPONENT ====================
+function PersonNode({ person, onClick, size = 'normal' }: { person: any; onClick: () => void; size?: 'normal' | 'small' }) {
+  const isSmall = size === 'small';
+  const ringSize = isSmall ? 55 : 70;
+  const fontSize = isSmall ? 18 : 24;
+  const nameSize = isSmall ? 11 : 13;
+  const dateSize = isSmall ? 9 : 11;
+  
   return (
-    <button className="person-btn" onClick={onClick}>
-      <div className={`mini-avatar ${avatarClass}${deceased}`}>{getInitial(person.name)}</div>
-      <div className="info">
-        <div className="p-name">{person.name}</div>
-        {sub && <div className="p-sub">{sub}</div>}
-      </div>
-      <span className="chevron">‹</span>
-    </button>
-  );
-}
-
-function PersonView({ person, onNavigate }: { person: any; onNavigate: (id: string) => void }) {
-  const parent = person.parent ? people[person.parent] : null;
-  const mother = person.motherName;
-  const siblings = getSiblings(person.id);
-  const children = (person.children || []).map((cid: string) => people[cid]).filter(Boolean);
-  const spouses = person.spouses || [];
-
-  const avatarClass = person.gender === 'female' ? 'female' : 'male';
-  const statusIcon = person.deceased ? '۞' : '❋';
-
-  return (
-    <>
-      <div className="hero">
-        <div className="avatar-ring">
-          <div className={`avatar ${avatarClass}`}>{getInitial(person.name)}</div>
-          <div className="status-dot">{statusIcon}</div>
-        </div>
-        <h1 className="hero-name">{person.name}</h1>
-        {person.nickname && <div className="hero-nickname">{person.nickname}</div>}
-        <div style={{ marginTop: 4 }}>
-          {person.deceased && (
-            <div className="hero-meta">🤲 {person.gender === 'female' ? 'رحمة الله عليها' : 'رحمة الله عليه'}</div>
-          )}
-          {mother && <div className="hero-meta">👩 من الأم: {mother}</div>}
-        </div>
-        {person.note && <div className="hero-note">{person.note}</div>}
-      </div>
-
-      {parent && (
-        <div className="rel-section">
-          <div className="rel-title">{parent.gender === 'female' ? 'الأم' : 'الأب'}</div>
-          <PersonButton
-            person={parent}
-            label={parent.gender === 'female' ? 'الأم' : 'الأب'}
-            onClick={() => onNavigate(parent.id)}
-          />
-        </div>
-      )}
-
-      {spouses.length > 0 && (
-        <div className="rel-section">
-          <div className="rel-title">
-            {person.gender === 'female' ? 'الزوج' : (spouses.length > 1 ? 'الزوجات' : 'الزوجة')}
-            <span className="rel-count">{spouses.length}</span>
-          </div>
-          <div className="info-list">
-            {spouses.map((s: any, i: number) => (
-              <div className="info-item" key={i}>
-                <span className="icon">💍</span>
-                <div className="text">
-                  {s.name}
-                  {s.note && <div className="sub">{s.note}</div>}
-                </div>
-              </div>
-            ))}
+    <div className="person-node" onClick={onClick}>
+      <div className="avatar-container">
+        <div 
+          className={`avatar-ring ${person.gender === 'female' ? 'female' : 'male'}`}
+          style={{ width: ringSize, height: ringSize }}
+        >
+          <div className="avatar-inner" style={{ fontSize }}>
+            {getInitial(person.name)}
           </div>
         </div>
-      )}
-
-      {children.length > 0 && (
-        <div className="rel-section">
-          <div className="rel-title">الأبناء <span className="rel-count">{children.length}</span></div>
-          {children.map((c: any) => {
-            const ccount = (c.children || []).length;
-            const subtext = ccount > 0 ? `${ccount} ${ccount === 1 ? 'ابن/بنت' : 'أبناء'}` : '';
-            return (
-              <PersonButton
-                key={c.id}
-                person={c}
-                subtext={subtext || c.nickname}
-                onClick={() => onNavigate(c.id)}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {siblings.length > 0 && (
-        <div className="rel-section">
-          <div className="rel-title">الإخوة والأخوات <span className="rel-count">{siblings.length}</span></div>
-          {siblings.map((s: any) => (
-            <PersonButton
-              key={s.id}
-              person={s}
-              subtext={s.gender === 'female' ? 'أخت' : 'أخ'}
-              onClick={() => onNavigate(s.id)}
-            />
-          ))}
-        </div>
-      )}
-    </>
-  );
-}
-
-function HomeView({ onNavigate, onOpenSearch, onOpenAbout }: { onNavigate: (id: string) => void; onOpenSearch: () => void; onOpenAbout: () => void }) {
-  return (
-    <>
-      <div className="welcome">
-        <div className="greeting">أهلاً وسهلاً بك في</div>
-        <div className="welcome-title">عائلة المقمر الكريمة</div>
-        <div className="ornament">❋ ❋ ❋</div>
       </div>
-
-      <button className="cta-card" onClick={() => onNavigate('root')}>
-        <div className="label">ابدأ من البداية</div>
-        <div className="title">الحاج مصطفى علي المقمر</div>
-        <div className="subtitle">الجد الأكبر — من هنا تبدأ الحكاية</div>
-        <div className="arrow">←</div>
-      </button>
-
-      <button
-        className="cta-card"
-        onClick={() => onNavigate('bohaira-root')}
-        style={{ background: 'linear-gradient(145deg, var(--gold-deep), var(--rust))' }}
-      >
-        <div className="label">فرع البحيرة</div>
-        <div className="title">أبو حمص وإدكو</div>
-        <div className="subtitle">أبناء العم  في البحيرة</div>
-        <div className="arrow">←</div>
-      </button>
-
-      <div className="quick-links">
-        <div className="quick-link" onClick={onOpenSearch}>
-          <span className="ql-icon">🔍</span>
-          <div className="ql-name">ابحث عن فرد</div>
-          <div className="ql-desc">اكتب أي اسم</div>
-        </div>
-        <div className="quick-link" onClick={onOpenAbout}>
-          <span className="ql-icon">📖</span>
-          <div className="ql-name">قصة العائلة</div>
-          <div className="ql-desc">الأصل والتاريخ</div>
-        </div>
-        <div className="quick-link" onClick={() => onNavigate('ahmed-abdelazeem')}>
-          <span className="ql-icon">⭐</span>
-          <div className="ql-name">أبو أحمد</div>
-          <div className="ql-desc">جامع الشمل</div>
-        </div>
-        <div className="quick-link" onClick={() => onNavigate('mohamed-ahmed')}>
-          <span className="ql-icon">🌿</span>
-          <div className="ql-name">عميد العائلة</div>
-          <div className="ql-desc">الحاج محمد أحمد</div>
-        </div>
+      <div className="person-name" style={{ fontSize: nameSize }}>
+        {shortenName(person.name)}
       </div>
-    </>
-  );
-}
-
-function Breadcrumb({ currentId, onNavigate }: { currentId: string; onNavigate: (id: string) => void }) {
-  const chain = useMemo(() => buildAncestry(currentId), [currentId]);
-  const trailRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (trailRef.current) {
-      setTimeout(() => { if (trailRef.current) trailRef.current.scrollLeft = 0; }, 50);
-    }
-  }, [currentId]);
-
-  if (chain.length <= 1) return null;
-
-  return (
-    <div className="trail" ref={trailRef}>
-      <button className="trail-item" onClick={() => onNavigate('home')}>🏠</button>
-      {chain.map((p, i) => (
-        <React.Fragment key={p.id}>
-          <span className="trail-separator">‹</span>
-          <button
-            className={`trail-item ${i === chain.length - 1 ? 'current' : ''}`}
-            onClick={() => onNavigate(p.id)}
-          >
-            {shortenName(p.name)}
-          </button>
-        </React.Fragment>
-      ))}
+      <div className="person-dates" style={{ fontSize: dateSize }}>
+        {person.deceased ? (
+          <span className="deceased">رحمه الله</span>
+        ) : (
+          <span className="alive">حفظه الله</span>
+        )}
+      </div>
     </div>
   );
 }
 
-function SearchOverlay({ open, onClose, onNavigate }: { open: boolean; onClose: () => void; onNavigate: (id: string) => void }) {
+// ==================== TREE VIEW COMPONENT ====================
+function TreeView({ onSelectPerson }: { onSelectPerson: (id: string) => void }) {
+  const root = people['root'];
+  const rootChildren = (root.children || []).map((id: string) => people[id]).filter(Boolean);
+
+  return (
+    <div className="visual-tree">
+      {/* Root Generation */}
+      <div className="generation">
+        <div className="family-unit">
+          <PersonNode person={root} onClick={() => onSelectPerson(root.id)} />
+          
+          {/* Connection line to children */}
+          {rootChildren.length > 0 && (
+            <div style={{ 
+              width: 2, 
+              height: 30, 
+              background: 'var(--line-color)', 
+              margin: '10px auto' 
+            }} />
+          )}
+        </div>
+      </div>
+
+      {/* First Generation Children */}
+      {rootChildren.length > 0 && (
+        <div className="generation">
+          <div style={{ position: 'relative' }}>
+            {/* Horizontal connector line */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 50,
+              right: 50,
+              height: 2,
+              background: 'var(--line-color)'
+            }} />
+            
+            <div className="generation-members" style={{ paddingTop: 20 }}>
+              {rootChildren.slice(0, 6).map((child: any, index: number) => (
+                <div key={child.id} className="family-unit">
+                  {/* Vertical connector */}
+                  <div style={{
+                    width: 2,
+                    height: 20,
+                    background: 'var(--line-color)',
+                    position: 'absolute',
+                    top: 0,
+                    left: '50%',
+                    transform: 'translateX(-50%)'
+                  }} />
+                  
+                  {/* Heart connector */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 10,
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    background: 'var(--bg-white)',
+                    width: 16,
+                    height: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 5
+                  }}>
+                    <HeartIcon />
+                  </div>
+                  
+                  <PersonNode 
+                    person={child} 
+                    onClick={() => onSelectPerson(child.id)}
+                    size="small"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Show more children indicator */}
+      {rootChildren.length > 6 && (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '20px',
+          color: 'var(--text-secondary)',
+          fontSize: 14
+        }}>
+          +{rootChildren.length - 6} more family members
+        </div>
+      )}
+
+      {/* Second Generation Preview */}
+      {rootChildren.slice(0, 3).map((child: any) => {
+        const grandchildren = (child.children || []).map((id: string) => people[id]).filter(Boolean);
+        if (grandchildren.length === 0) return null;
+        
+        return (
+          <div key={`gen2-${child.id}`} className="generation" style={{ marginTop: 20 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ 
+                textAlign: 'center', 
+                marginBottom: 10,
+                fontSize: 12,
+                color: 'var(--text-secondary)'
+              }}>
+                أبناء {shortenName(child.name)}
+              </div>
+              <div className="generation-members">
+                {grandchildren.slice(0, 5).map((gc: any) => (
+                  <PersonNode 
+                    key={gc.id}
+                    person={gc} 
+                    onClick={() => onSelectPerson(gc.id)}
+                    size="small"
+                  />
+                ))}
+                {grandchildren.length > 5 && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 55,
+                    height: 55,
+                    borderRadius: '50%',
+                    background: 'var(--bg-gray)',
+                    fontSize: 14,
+                    color: 'var(--text-secondary)',
+                    cursor: 'pointer'
+                  }} onClick={() => onSelectPerson(child.id)}>
+                    +{grandchildren.length - 5}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ==================== DETAIL PANEL ====================
+function DetailPanel({ person, open, onClose, onNavigate }: { 
+  person: any; 
+  open: boolean; 
+  onClose: () => void; 
+  onNavigate: (id: string) => void;
+}) {
+  if (!person) return null;
+
+  const parent = person.parent ? people[person.parent] : null;
+  const siblings = getSiblings(person.id);
+  const children = (person.children || []).map((cid: string) => people[cid]).filter(Boolean);
+  const spouses = person.spouses || [];
+
+  return (
+    <div className={`detail-panel${open ? ' open' : ''}`}>
+      <header className="detail-header">
+        <button className="back-btn" onClick={onClose} aria-label="Close">
+          &#8592;
+        </button>
+        <span style={{ fontWeight: 600 }}>تفاصيل الشخص</span>
+      </header>
+      
+      <div className="detail-content">
+        <div className="detail-hero">
+          <div className={`detail-avatar ${person.gender === 'female' ? 'female' : 'male'}`}>
+            <div className="detail-avatar-inner">
+              {getInitial(person.name)}
+            </div>
+          </div>
+          <h1 className="detail-name">{person.name}</h1>
+          {person.nickname && <p className="detail-nickname">{person.nickname}</p>}
+          
+          <div className={`detail-status ${person.deceased ? 'deceased' : 'alive'}`}>
+            {person.deceased ? 'رحمه الله' : 'حفظه الله'}
+          </div>
+          
+          {person.note && <div className="detail-note">{person.note}</div>}
+        </div>
+
+        {parent && (
+          <div className="detail-section">
+            <div className="detail-section-title">
+              {parent.gender === 'female' ? 'الأم' : 'الأب'}
+            </div>
+            <div 
+              className="search-person"
+              onClick={() => onNavigate(parent.id)}
+            >
+              <div className={`mini-avatar ${parent.gender === 'female' ? 'female' : 'male'}`}>
+                <div className="mini-avatar-inner">{getInitial(parent.name)}</div>
+              </div>
+              <div className="info">
+                <div className="name">{parent.name}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {spouses.length > 0 && (
+          <div className="detail-section">
+            <div className="detail-section-title">
+              {person.gender === 'female' ? 'الزوج' : (spouses.length > 1 ? 'الزوجات' : 'الزوجة')}
+            </div>
+            {spouses.map((s: any, i: number) => (
+              <div key={i} style={{
+                padding: '12px 16px',
+                background: 'var(--bg-gray)',
+                borderRadius: 12,
+                marginBottom: 8
+              }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>{s.name}</div>
+                {s.note && <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{s.note}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {children.length > 0 && (
+          <div className="detail-section">
+            <div className="detail-section-title">الأبناء ({children.length})</div>
+            {children.map((c: any) => (
+              <div 
+                key={c.id}
+                className="search-person"
+                onClick={() => onNavigate(c.id)}
+              >
+                <div className={`mini-avatar ${c.gender === 'female' ? 'female' : 'male'}`}>
+                  <div className="mini-avatar-inner">{getInitial(c.name)}</div>
+                </div>
+                <div className="info">
+                  <div className="name">{c.name}</div>
+                  {c.nickname && <div className="sub">{c.nickname}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {siblings.length > 0 && (
+          <div className="detail-section">
+            <div className="detail-section-title">الإخوة والأخوات ({siblings.length})</div>
+            {siblings.map((s: any) => (
+              <div 
+                key={s.id}
+                className="search-person"
+                onClick={() => onNavigate(s.id)}
+              >
+                <div className={`mini-avatar ${s.gender === 'female' ? 'female' : 'male'}`}>
+                  <div className="mini-avatar-inner">{getInitial(s.name)}</div>
+                </div>
+                <div className="info">
+                  <div className="name">{s.name}</div>
+                  <div className="sub">{s.gender === 'female' ? 'أخت' : 'أخ'}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ==================== SEARCH OVERLAY ====================
+function SearchOverlay({ open, onClose, onNavigate }: { 
+  open: boolean; 
+  onClose: () => void; 
+  onNavigate: (id: string) => void; 
+}) {
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -994,12 +1506,14 @@ function SearchOverlay({ open, onClose, onNavigate }: { open: boolean; onClose: 
   return (
     <div className={`search-overlay${open ? ' open' : ''}`}>
       <header className="search-header">
-        <button className="icon-btn" onClick={onClose} aria-label="إغلاق">←</button>
+        <button className="icon-btn" onClick={onClose} aria-label="Close">
+          &#8592;
+        </button>
         <input
           ref={inputRef}
           type="text"
           className="search-input"
-          placeholder="اكتب اسم شخص من العيلة..."
+          placeholder="ابحث عن اسم..."
           value={query}
           onChange={e => setQuery(e.target.value)}
         />
@@ -1007,28 +1521,33 @@ function SearchOverlay({ open, onClose, onNavigate }: { open: boolean; onClose: 
       <div className="search-results">
         {matches === null && (
           <div className="search-empty">
-            <span className="big-icon">🔍</span>
-            اكتب اسم من العيلة<br />
-            <small style={{ opacity: 0.7, fontSize: 14 }}>مثال: أحمد، فاطمة، نادية...</small>
+            <div className="icon">&#128269;</div>
+            <p>اكتب اسم شخص من العائلة</p>
           </div>
         )}
         {matches !== null && matches.length === 0 && (
           <div className="search-empty">
-            <span className="big-icon">😔</span>
-            لا توجد نتائج لـ "{query}"<br />
-            <small style={{ opacity: 0.7, fontSize: 14 }}>جرّب جزء من الاسم فقط</small>
+            <div className="icon">&#128533;</div>
+            <p>لا توجد نتائج لـ &quot;{query}&quot;</p>
           </div>
         )}
         {matches !== null && matches.map(p => {
           const parent = p.parent ? people[p.parent] : null;
           const sub = parent ? `ابن/بنت ${shortenName(parent.name)}` : (p.nickname || '');
           return (
-            <PersonButton
+            <div
               key={p.id}
-              person={p}
-              subtext={sub}
+              className="search-person"
               onClick={() => { onClose(); onNavigate(p.id); }}
-            />
+            >
+              <div className={`mini-avatar ${p.gender === 'female' ? 'female' : 'male'}`}>
+                <div className="mini-avatar-inner">{getInitial(p.name)}</div>
+              </div>
+              <div className="info">
+                <div className="name">{p.name}</div>
+                {sub && <div className="sub">{sub}</div>}
+              </div>
+            </div>
           );
         })}
       </div>
@@ -1036,105 +1555,21 @@ function SearchOverlay({ open, onClose, onNavigate }: { open: boolean; onClose: 
   );
 }
 
-function AboutOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const stats = useMemo(() => {
-    const all = getAllPeople();
-    return { total: all.length, deceased: all.filter((p: any) => p.deceased).length };
-  }, []);
-
-  return (
-    <div className={`about-overlay${open ? ' open' : ''}`}>
-      <header className="about-header">
-        <button className="icon-btn" onClick={onClose} aria-label="إغلاق">←</button>
-        <div className="topbar-title" style={{ flex: 1 }}>عن العائلة</div>
-      </header>
-      <div className="about-content">
-        <div className="about-inner">
-          <h2>عائلة المقمر</h2>
-          <p style={{ color: 'var(--gold-deep)', fontStyle: 'italic', marginTop: 4 }}>
-            صلة الرحم بيننا هبة من الله
-          </p>
-
-          <div className="stat-grid">
-            <div className="stat-card">
-              <div className="num">{stats.total}</div>
-              <div className="lbl">فرد في الشجرة</div>
-            </div>
-            <div className="stat-card">
-              <div className="num">٤</div>
-              <div className="lbl">أجيال</div>
-            </div>
-            <div className="stat-card">
-              <div className="num">{stats.deceased}</div>
-              <div className="lbl">في ذمة الله</div>
-            </div>
-          </div>
-
-         <div className="quote">
-  الهدف من هذا الجمع هو التعارف والتواصل والتراحم وصلة الرحم بين أبناء عائلة المقمر الكريمة، المعروفة سابقًا باسم أبو عمرية، حسب رواية الحاج عبدالعزيز المقمر رحمه الله  .
-</div>
-
-          <h3>أصل العائلة</h3>
-          <p>
-            عائلة المقمر عائلة عريقة، جذورها تمتد في مدينة زفتي وقراها، ومنها فروع في محافظة البحيرة (أبو حمص وإدكو ودمنهور وكفر الدوار)، وفي بورسعيد، والإسكندرية، وأسوان، والفيوم، وخارج مصر.
-          </p>
-          <p>
-            الجد الأكبر الموثق لدينا هو <strong>الحاج مصطفى علي المقمر</strong> رحمة الله عليه، توفي سنة 1949، وله ذرية كثيرة من عدة زوجات، انتشرت في أنحاء الجمهورية.
-          </p>
-
-          <h3>تسمية المقمر</h3>
-          <p>
-            هناك روايات عن سبب تسمية العائلة بهذا الاسم. من أشهرها رواية العيش المقمر الذي كان يُقدم للعمال أثناء البناء، فكانوا يقولون "المقمر جه". وبعض أبناء البحيرة يرجع النسب إلى آل المنير من الأشراف نسبة للحسين رضي الله عنه.
-          </p>
-
-          <h3>قيم العائلة</h3>
-          <p>
-            هذه العائلة مبنية على الود والاحترام وصلة الرحم، ومن تقاليدها الاجتماع على الخير، والوقوف جنب بعض في الأفراح والأحزان. وكان للأجداد <strong>"صندوق العائلة"</strong> الذي كانوا يساعدون به من يمر بظروف قهرية.
-          </p>
-
-          <h3>فضل جامع الشمل</h3>
-          <p>
-            الحاج <strong>أحمد عبد العظيم المقمر</strong> (أبو أحمد) له الفضل بعد الله في إنشاء جروب العائلة الذي جمع شمل أفرادها، وأعاد التواصل بين فروعها المتفرقة.
-          </p>
-
-          <div className="quote" style={{ textAlign: 'center' }}>
-            اللهم اغفر لمن سبقونا من هذه العائلة الطيبة،<br />
-            وبارك لنا فيمن بقي،<br />
-            واجعل صلة الرحم في ميزان حسناتنا جميعاً
-            <br /><br />
-            <small style={{ color: 'var(--gold-deep)' }}>— اللهم آمين</small>
-          </div>
-
-          <h3>عن هذا الموقع</h3>
-          <p>
-            تم جمع بيانات هذه الشجرة من محادثات جروب العائلة، ومن الأوراق التي كتبها بخط يده الحاج عبد العزيز مصطفى المقمر رحمه الله، ومن شهادات الأجداد والكبار. ولو لاحظت معلومة ناقصة أو تحتاج تصحيح، فاطلب من الأهل إضافتها.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ==================== ROOT ====================
+// ==================== ROOT COMPONENT ====================
 export default function FamilyTreeApp() {
-  const [currentId, setCurrentId] = useState('home');
-  const [history, setHistory] = useState<string[]>([]);
+  const [selectedPerson, setSelectedPerson] = useState<any>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
-  const [transitioning, setTransitioning] = useState(false);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const pendingNavRef = useRef<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
-  // Inject fonts + styles once
+  // Inject styles once
   useEffect(() => {
     const existing = document.getElementById('fm-family-styles');
     if (existing) return;
 
-    // RTL on document
     document.documentElement.setAttribute('lang', 'ar');
     document.documentElement.setAttribute('dir', 'rtl');
 
-    // Preconnect + font link
+    // Add Google Fonts
     const preconnect1 = document.createElement('link');
     preconnect1.rel = 'preconnect';
     preconnect1.href = 'https://fonts.googleapis.com';
@@ -1148,171 +1583,86 @@ export default function FamilyTreeApp() {
 
     const fontLink = document.createElement('link');
     fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Markazi+Text:wght@400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;500;600;700&display=swap';
     document.head.appendChild(fontLink);
 
-    // Stylesheet
     const style = document.createElement('style');
     style.id = 'fm-family-styles';
     style.textContent = STYLES;
     document.head.appendChild(style);
   }, []);
 
-  const navigate = useCallback((id: string) => {
-    setTransitioning(true);
-    pendingNavRef.current = id;
-    setTimeout(() => {
-      setHistory(prev => {
-        if (currentId !== id && currentId !== 'home') return [...prev, currentId];
-        return prev;
-      });
-      setCurrentId(id);
-      setTransitioning(false);
-      if (stageRef.current) stageRef.current.scrollTop = 0;
-    }, 180);
-  }, [currentId]);
-
-  const goBack = useCallback(() => {
-    if (searchOpen) { setSearchOpen(false); return; }
-    if (aboutOpen) { setAboutOpen(false); return; }
-    if (history.length > 0) {
-      const prev = history[history.length - 1];
-      setHistory(h => h.slice(0, -1));
-      setTransitioning(true);
-      setTimeout(() => {
-        setCurrentId(prev);
-        setTransitioning(false);
-        if (stageRef.current) stageRef.current.scrollTop = 0;
-      }, 180);
-    } else if (currentId !== 'home') {
-      setTransitioning(true);
-      setTimeout(() => {
-        setCurrentId('home');
-        setTransitioning(false);
-      }, 180);
+  const handleSelectPerson = useCallback((id: string) => {
+    const person = people[id];
+    if (person) {
+      setSelectedPerson(person);
+      setDetailOpen(true);
     }
-  }, [history, currentId, searchOpen, aboutOpen]);
+  }, []);
 
-  // Keyboard
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') goBack();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [goBack]);
+  const handleNavigate = useCallback((id: string) => {
+    const person = people[id];
+    if (person) {
+      setSelectedPerson(person);
+    }
+  }, []);
 
-  // Swipe to go back
-  useEffect(() => {
-    let startX = 0, startY = 0;
-    const onStart = (e: TouchEvent) => {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-    };
-    const onEnd = (e: TouchEvent) => {
-      const dx = e.changedTouches[0].clientX - startX;
-      const dy = Math.abs(e.changedTouches[0].clientY - startY);
-      if (dx < -80 && dy < 50 && startX < 40 && currentId !== 'home') {
-        goBack();
-      }
-    };
-    document.addEventListener('touchstart', onStart, { passive: true });
-    document.addEventListener('touchend', onEnd, { passive: true });
-    return () => {
-      document.removeEventListener('touchstart', onStart);
-      document.removeEventListener('touchend', onEnd);
-    };
-  }, [currentId, goBack]);
-
-  const person = currentId !== 'home' ? (people as any)[currentId] : null;
-  const isHome = currentId === 'home';
-  const showTrail = !isHome && person && buildAncestry(currentId).length > 1;
-
-  // Active nav logic
-  let activeNav = null;
-  if (searchOpen) activeNav = 'search';
-  else if (aboutOpen) activeNav = 'about';
-  else if (isHome) activeNav = 'home';
-  else if (currentId === 'root') activeNav = 'root';
+  const stats = useMemo(() => {
+    const all = getAllPeople();
+    return { total: all.length, deceased: all.filter((p: any) => p.deceased).length };
+  }, []);
 
   return (
     <div className="fm-root">
-      <header className="topbar">
-        <button
-          className={`icon-btn${isHome ? ' hidden' : ''}`}
-          onClick={goBack}
-          aria-label="رجوع"
-        >←</button>
-        <div className="topbar-title">عائلة المقمر</div>
-        <button
-          className="icon-btn"
-          onClick={() => navigate('home')}
-          aria-label="الرئيسية"
-        >🏠</button>
-      </header>
-
-      {showTrail && <Breadcrumb currentId={currentId} onNavigate={navigate} />}
-
-      <main className={`stage${showTrail ? ' has-trail' : ''}`} ref={stageRef}>
-        <div className={`stage-inner${transitioning ? ' view-transition-out' : ''}`}>
-          {isHome ? (
-            <HomeView
-              onNavigate={navigate}
-              onOpenSearch={() => setSearchOpen(true)}
-              onOpenAbout={() => setAboutOpen(true)}
-            />
-          ) : person ? (
-            <PersonView person={person} onNavigate={navigate} />
-          ) : (
-            <HomeView
-              onNavigate={navigate}
-              onOpenSearch={() => setSearchOpen(true)}
-              onOpenAbout={() => setAboutOpen(true)}
-            />
-          )}
+      {/* Title Card */}
+      <div className="title-card">
+        <div className="tree-icon">
+          <TreeIcon />
         </div>
-      </main>
+        <div className="title-text">
+          <h1>عائلة المقمر</h1>
+          <p>شجرة العائلة الكريمة - {stats.total} فرد</p>
+        </div>
+      </div>
 
+      {/* Tree Container */}
+      <div className="tree-container">
+        <TreeView onSelectPerson={handleSelectPerson} />
+      </div>
+
+      {/* Gradient Bar */}
+      <div className="gradient-bar" />
+
+      {/* Bottom Navigation */}
+      <nav className="bottomnav">
+        <button className="nav-btn active" onClick={() => { setSearchOpen(false); setDetailOpen(false); }}>
+          <span className="nav-icon">&#127795;</span>
+          <span>الشجرة</span>
+        </button>
+        <button className="nav-btn" onClick={() => handleSelectPerson('root')}>
+          <span className="nav-icon">&#128081;</span>
+          <span>الجد الأكبر</span>
+        </button>
+        <button className="nav-btn" onClick={() => setSearchOpen(true)}>
+          <span className="nav-icon">&#128269;</span>
+          <span>بحث</span>
+        </button>
+      </nav>
+
+      {/* Search Overlay */}
       <SearchOverlay
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
-        onNavigate={navigate}
-      />
-      <AboutOverlay
-        open={aboutOpen}
-        onClose={() => setAboutOpen(false)}
+        onNavigate={handleSelectPerson}
       />
 
-      <nav className="bottomnav">
-        <button
-          className={`nav-btn${activeNav === 'home' ? ' active' : ''}`}
-          onClick={() => { setSearchOpen(false); setAboutOpen(false); navigate('home'); }}
-        >
-          <span className="nav-icon">🏠</span>
-          <span>الرئيسية</span>
-        </button>
-        <button
-          className={`nav-btn${activeNav === 'root' ? ' active' : ''}`}
-          onClick={() => { setSearchOpen(false); setAboutOpen(false); navigate('root'); }}
-        >
-          <span className="nav-icon">🌳</span>
-          <span>الجد الأكبر</span>
-        </button>
-        <button
-          className={`nav-btn${activeNav === 'search' ? ' active' : ''}`}
-          onClick={() => { setAboutOpen(false); setSearchOpen(true); }}
-        >
-          <span className="nav-icon">🔍</span>
-          <span>بحث</span>
-        </button>
-        <button
-          className={`nav-btn${activeNav === 'about' ? ' active' : ''}`}
-          onClick={() => { setSearchOpen(false); setAboutOpen(true); }}
-        >
-          <span className="nav-icon">📖</span>
-          <span>القصة</span>
-        </button>
-      </nav>
+      {/* Detail Panel */}
+      <DetailPanel
+        person={selectedPerson}
+        open={detailOpen}
+        onClose={() => setDetailOpen(false)}
+        onNavigate={handleNavigate}
+      />
     </div>
   );
 }
