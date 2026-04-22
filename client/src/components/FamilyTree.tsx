@@ -804,7 +804,7 @@ function DetailPanel({ personId, onClose, onNavigate }: {
         )}
 
         {children.length > 0 && (
-          <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: 30 }}>
             <div style={{ fontSize: 10, color: '#6b7280', fontFamily: "'Segoe UI', sans-serif", marginBottom: 4, fontWeight: 600, textTransform: 'uppercase' }}>
               الأبناء ({children.length})
             </div>
@@ -1041,6 +1041,7 @@ export default function FamilyTreeApp() {
   const totalPeople = useMemo(() => getAllPeople().length, []);
 
   return (
+    
     <div style={{
       width: '100vw', height: '100vh',
       display: 'flex', flexDirection: 'column',
