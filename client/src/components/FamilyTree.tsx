@@ -667,6 +667,7 @@ function TreeSVG({ rootId, selectedId, onSelect, expandedNodes, onToggleExpand }
             key={layout.id}
             transform={`translate(${cx}, ${cy})`}
             style={{ cursor: 'pointer' }}
+            onClick={() => onSelect(layout.id)}
           >
             {/* Card background */}
             <rect
@@ -706,7 +707,10 @@ function TreeSVG({ rootId, selectedId, onSelect, expandedNodes, onToggleExpand }
               fill={isFemale ? '#ec4899' : '#3b82f6'}
               stroke={isSelected ? '#1e40af' : '#fff'}
               strokeWidth={isSelected ? 2.5 : 2}
-              onClick={() => onSelect(layout.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(layout.id);
+              }}
             />
 
             {/* Initial letter */}
@@ -719,7 +723,10 @@ function TreeSVG({ rootId, selectedId, onSelect, expandedNodes, onToggleExpand }
               fontSize={16}
               fontWeight="700"
               fontFamily="'Segoe UI', sans-serif"
-              onClick={() => onSelect(layout.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(layout.id);
+              }}
             >{initial}</text>
 
             {/* Name */}
