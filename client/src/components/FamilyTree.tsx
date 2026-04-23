@@ -11,6 +11,7 @@ const people: any = {
     deceased: true,
     spouses: [
       { name: "خضرة", note: "من أوائل زوجاته" },
+      { name: "السيدة محمد بدر الدين", note: "زوجة قبل مسعدة شعلان" },
       { name: "الحاجة مسعدة العشماوي شعلان", note: "من نهطاي - آخر زوجاته - توفيت 1995" }
     ],
     children: ["ahmed-mostafa", "mohamed-mostafa", "ibrahim-mostafa", "anisa-mostafa", "abdelaziz-mostafa", "zeinab-mostafa", "abdelmonem-mostafa", "mahmoud-mostafa", "abouzeid-mostafa", "saeed-mostafa", "abdelmonem-older", "ibrahim-bonn"]
@@ -34,14 +35,47 @@ const people: any = {
     children: ["ibrahim-mohamed", "abdelfattah-mohamed", "mohamed-mohamed"]
   },
   "ibrahim-mostafa": {
-    id: "ibrahim-mostafa", name: "إبراهيم مصطفى المقمر", nickname: "الدسوقي",
-    gender: "male", deceased: true, parent: "root",
+    id: "ibrahim-mostafa",
+    name: "إبراهيم مصطفى المقمر",
+    nickname: "الدسوقي",
+    gender: "male",
+    deceased: true,
+    parent: "root",
+    motherName: "السيدة محمد بدر الدين",
     note: "كان معروف بلقب الدسوقي",
-    children:["mostafa-ibrahem"]
+    spouses: [
+      { name: "فتحية العشماوي شعلان" },
+      { name: "سنية عبد الغفار الشبكي" }
+    ],
+    children:["mostafa-ibrahem","sabry-ibrahim","sayeda-ibrahim"]
   },
+  "sabry-ibrahim": {
+    id: "sabry-ibrahim",
+    name: "صبري إبراهيم مصطفى المقمر",
+    gender: "male",
+    parent: "ibrahim-mostafa",
+    note: "مقيم بزفتي",
+    children: ["ayman-sabry","asmaa-sabry","ahmed-sabry","amira-sabry","esraa-sabry"]
+  },
+
+  "ayman-sabry": { id: "ayman-sabry", name: "أيمن صبري", gender: "male", parent: "sabry-ibrahim" },
+  "asmaa-sabry": { id: "asmaa-sabry", name: "أسماء صبري", gender: "female", parent: "sabry-ibrahim" },
+  "ahmed-sabry": { id: "ahmed-sabry", name: "أحمد صبري", gender: "male", parent: "sabry-ibrahim" },
+  "amira-sabry": { id: "amira-sabry", name: "أميرة صبري", gender: "female", parent: "sabry-ibrahim" },
+  "esraa-sabry": { id: "esraa-sabry", name: "إسراء صبري", gender: "female", parent: "sabry-ibrahim" },
+
+  "sayeda-ibrahim": {
+    id: "sayeda-ibrahim",
+    name: "السيدة إبراهيم مصطفى المقمر",
+    gender: "female",
+    parent: "ibrahim-mostafa",
+    note: "مقيمة بدمنهور الوحش"
+  },
+
   "anisa-mostafa": {
     id: "anisa-mostafa", name: "الحاجة أنيسة مصطفى المقمر",
     gender: "female", deceased: true, parent: "root",
+    motherName: "السيدة محمد بدر الدين",
     spouses: [{ name: "الحاج أبو العزم السباك" }]
   },
   "abdelaziz-mostafa": {
@@ -101,11 +135,17 @@ const people: any = {
   },
 
   "abdelazeem-ahmed": {
-    id: "abdelazeem-ahmed", name: "الحاج عبد العظيم أحمد المقمر",
-    gender: "male", deceased: true, parent: "ahmed-mostafa",
+    id: "abdelazeem-ahmed",
+    name: "الحاج عبد العظيم أحمد المقمر",
+    gender: "male",
+    deceased: true,
+    parent: "ahmed-mostafa",
     motherName: "هانم درويش",
-    spouses: [{ name: "الحاجة نفيسة عبد الوهاب عامر" }],
-    children: ["ahmed-abdelazeem", "osama-abdelazeem","hanaa-abdelazeem", "ebtesam-abdelazeem", "asmaa-abdelazeem", "rabab-abdelazeem"]
+    note: "ولد وعاش وتوفي في زفتي. كان تاجر كاوتشوك وصاحب محل، ومن أوائل من امتلكوا سيارات نقل مرسيدس في زفتي وميت غمر (ثاني عربية نقل مرسيدس هناك). كان لديه سيارة ملاكي ومكتب بشارع الجيش أمام مسجد عيد (مكان سليمان الجزار حالياً)، وكان لديه تليفون رقم 3565.",
+    spouses: [
+      { name: "الحاجة نفيسة عبد الوهاب أحمد عامر", note: "من الجعفرية مركز السنطة، وكانت مقيمة في طنطا قبل الزواج، ومن نسل سيدي أبو العزم وله مقام كبير هناك" }
+    ],
+    children: ["hanaa-abdelazeem","osama-abdelazeem","asmaa-abdelazeem","ahmed-abdelazeem","mostafa-abdelazeem","ebtesam-abdelazeem","rabab-abdelazeem"]
   },
   "mohamed-ahmed": {
     id: "mohamed-ahmed", name: "الحاج محمد أحمد المقمر", nickname: "عميد عائلات المقمر",
@@ -225,15 +265,94 @@ const people: any = {
   "ahmed-abouzeid": { id: "ahmed-abouzeid", name: "أحمد أبو زيد المقمر", gender: "male", deceased: true, parent: "abouzeid-mostafa", note: "متزوج من سنباط" },
 
   "ahmed-abdelazeem": {
-    id: "ahmed-abdelazeem", name: "الحاج أحمد عبد العظيم المقمر", nickname: "أبو أحمد",
-    gender: "male", parent: "abdelazeem-ahmed",
-    note: "منشئ جروب العائلة الذي جمع شمل العائلة كلها - الله يجزيه خير"
+    id: "ahmed-abdelazeem",
+    name: "أحمد عبد العظيم المقمر",
+    gender: "male",
+    parent: "abdelazeem-ahmed",
+    note: "مواليد أكتوبر 1962 - مقيم في زفتي والقاهرة",
+    spouses: [{ name: "الحاجة كوثر متولي الأحول", note: "من المحلة" }],
+    children: ["nada-ahmed","safaa-ahmed","ahmed2-ahmed","ola-ahmed","farida-ahmed"]
   },
-  "hanaa-abdelazeem": { id: "hanaa-abdelazeem", name: "الحاجة هناء عبدالعظيم المقمر", gender: "female", parent: "abdelazeem-ahmed" },
-  "osama-abdelazeem": { id: "osama-abdelazeem", name: "الحاج أسامة عبد العظيم المقمر", gender: "male", parent: "abdelazeem-ahmed", note: "له بنت صغيرة اسمها مريم (آخر العنقود)" },
-  "ebtesam-abdelazeem": { id: "ebtesam-abdelazeem", name: "ابتسام عبد العظيم المقمر", gender: "female", parent: "abdelazeem-ahmed" },
-  "asmaa-abdelazeem": { id: "asmaa-abdelazeem", name: "أسماء عبد العظيم المقمر", gender: "female", parent: "abdelazeem-ahmed" },
-  "rabab-abdelazeem": { id: "rabab-abdelazeem", name: "رباب عبد العظيم المقمر", nickname: "آخر العنقود", gender: "female", parent: "abdelazeem-ahmed" },
+  "hanaa-abdelazeem": {
+    id: "hanaa-abdelazeem",
+    name: "هانم (هناء) عبد العظيم المقمر",
+    gender: "female",
+    parent: "abdelazeem-ahmed",
+    note: "مواليد يناير 1958 - مقيمة في 6 أكتوبر",
+    spouses: [{ name: "المهندس محمد جاد البراوي", note: "من ميت المخلص شرشابة" }],
+    children: ["sara-hanaa","ahmed-hanaa","aseel-hanaa"]
+  },
+  "osama-abdelazeem": {
+    id: "osama-abdelazeem",
+    name: "محمد (أسامة) عبد العظيم المقمر",
+    gender: "male",
+    parent: "abdelazeem-ahmed",
+    note: "مواليد أبريل 1959 - مقيم في أكتوبر وزفتي",
+    spouses: [{ name: "الأستاذة نجوى حسن الموشي" }],
+    children: ["fatma-osama","mariam-osama","khaled-osama"]
+  },
+  "mostafa-abdelazeem": {
+    id: "mostafa-abdelazeem",
+    name: "مصطفى عبد العظيم المقمر",
+    gender: "male",
+    deceased: true,
+    parent: "abdelazeem-ahmed",
+    note: "توفي وهو عمر عام"
+  },
+  "ebtesam-abdelazeem": {
+    id: "ebtesam-abdelazeem",
+    name: "ابتسام عبد العظيم المقمر",
+    gender: "female",
+    parent: "abdelazeem-ahmed",
+    note: "مواليد مارس 1970 - مقيمة في أكتوبر",
+    spouses: [{ name: "اللواء أحمد عبد الغفور الغنيمي", note: "من ملوي" }],
+    children: ["amal-ebtesam","alaa-ebtesam","arwa-ebtesam"]
+  },
+
+  "amal-ebtesam": { id: "amal-ebtesam", name: "أمل", gender: "female", parent: "ebtesam-abdelazeem" },
+  "alaa-ebtesam": { id: "alaa-ebtesam", name: "آلاء", gender: "female", parent: "ebtesam-abdelazeem" },
+  "arwa-ebtesam": { id: "arwa-ebtesam", name: "أروى", gender: "female", parent: "ebtesam-abdelazeem" },
+  "asmaa-abdelazeem": {
+    id: "asmaa-abdelazeem",
+    name: "أسماء عبد العظيم المقمر",
+    gender: "female",
+    parent: "abdelazeem-ahmed",
+    note: "مواليد يناير 1961 - مواليد سمنود محافظة الغربية - مقيمة في العبور",
+    spouses: [{ name: "الحاج ناجي محمد المصري", note: "تاجر زجاج وصاحب مصنع ديكورات ومرايا" }],
+    children: ["eman-asmaa","mohamed-asmaa","mostafa-asmaa","fatma-asmaa"]
+  },
+  "rabab-abdelazeem": {
+    id: "rabab-abdelazeem",
+    name: "رباب عبد العظيم المقمر",
+    gender: "female",
+    parent: "abdelazeem-ahmed",
+    note: "مواليد ديسمبر 1972 - مقيمة في زفتي",
+    spouses: [{ name: "الحاج أيمن الشيخ", note: "من كفر نواي زفتي - مقاول عقارات - متوفى" }],
+    children: ["ahmed-rabab","mohamed-rabab","mostafa-rabab"]
+  },
+
+  "ahmed-rabab": { id: "ahmed-rabab", name: "أحمد", gender: "male", parent: "rabab-abdelazeem",fatherName: "الحاج أيمن الشيخ" },
+  "mohamed-rabab": { id: "mohamed-rabab", name: "محمد", gender: "male", parent: "rabab-abdelazeem", deceased: true, note: "توفاه الله",fatherName: "الحاج أيمن الشيخ" },
+  "mostafa-rabab": { id: "mostafa-rabab", name: "مصطفى", gender: "male", parent: "rabab-abdelazeem", deceased: true, note: "توفاه الله",fatherName: "الحاج أيمن الشيخ" },
+
+  "sara-hanaa": { id: "sara-hanaa", name: "الدكتورة سارة", gender: "female", parent: "hanaa-abdelazeem", fatherName: "المهندس محمد جاد البراوي" },
+  "ahmed-hanaa": { id: "ahmed-hanaa", name: "الدكتور أحمد", gender: "male", parent: "hanaa-abdelazeem", fatherName: "المهندس محمد جاد البراوي" },
+  "aseel-hanaa": { id: "aseel-hanaa", name: "الأستاذة أسيل", gender: "female", parent: "hanaa-abdelazeem", fatherName: "المهندس محمد جاد البراوي" },
+
+  "fatma-osama": { id: "fatma-osama", name: "الأستاذة فاطمة", gender: "female", parent: "osama-abdelazeem" ,motherName: "نجوى حسن الموشي"},
+  "mariam-osama": { id: "mariam-osama", name: "الأستاذة مريم", gender: "female", parent: "osama-abdelazeem",motherName: "نجوى حسن الموشي" },
+  "khaled-osama": { id: "khaled-osama", name: "الأستاذ خالد", gender: "male", parent: "osama-abdelazeem",motherName: "نجوى حسن الموشي" },
+
+  "eman-asmaa": { id: "eman-asmaa", name: "الدكتورة إيمان", gender: "female", parent: "asmaa-abdelazeem",fatherName: "الحاج ناجي المصري" },
+  "mohamed-asmaa": { id: "mohamed-asmaa", name: "المهندس محمد", gender: "male", parent: "asmaa-abdelazeem",fatherName: "الحاج ناجي المصري" },
+  "mostafa-asmaa": { id: "mostafa-asmaa", name: "الأستاذ مصطفى", gender: "male", parent: "asmaa-abdelazeem",fatherName: "الحاج ناجي المصري" },
+  "fatma-asmaa": { id: "fatma-asmaa", name: "الأستاذة فاطمة", gender: "female", parent: "asmaa-abdelazeem",fatherName: "الحاج ناجي المصري" },
+
+  "nada-ahmed": { id: "nada-ahmed", name: "ندى", gender: "female", parent: "ahmed-abdelazeem",motherName: "كوثر متولي الأحول" },
+  "safaa-ahmed": { id: "safaa-ahmed", name: "صفاء", gender: "female", parent: "ahmed-abdelazeem",motherName: "كوثر متولي الأحول" },
+  "ahmed2-ahmed": { id: "ahmed2-ahmed", name: "أحمد", gender: "male", parent: "ahmed-abdelazeem",motherName: "كوثر متولي الأحول" },
+  "ola-ahmed": { id: "ola-ahmed", name: "علا", gender: "female", parent: "ahmed-abdelazeem",motherName: "كوثر متولي الأحول" },
+  "farida-ahmed": { id: "farida-ahmed", name: "فريدة", gender: "female", parent: "ahmed-abdelazeem",motherName: "كوثر متولي الأحول" },
 
   "mostafa-mohamed-a": { id: "mostafa-mohamed-a", name: "مصطفى محمد المقمر", gender: "male", deceased: true, parent: "mohamed-ahmed" },
   "ahmed-mohamed-a": { id: "ahmed-mohamed-a", name: "أحمد محمد المقمر", gender: "male",deceased: true, parent: "mohamed-ahmed" },
@@ -532,7 +651,7 @@ function TreeSVG({ rootId, selectedId, onSelect, expandedNodes, onToggleExpand }
         const childCount = (node.children || []).length;
         const isExpanded = expandedNodes.has(layout.id);
 
-        const nameText = shortenName(node.name);
+        const nameText = node.name;
         const initial = getInitials(node.name);
         
         const spouseName = node.spouses && node.spouses.length > 0 
@@ -767,7 +886,12 @@ function DetailPanel({ personId, onClose, onNavigate }: {
             {person.note}
           </div>
         )}
-
+        {person.fatherName && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, color: '#6b7280', fontFamily: "'Segoe UI', sans-serif", marginBottom: 4, fontWeight: 600, textTransform: 'uppercase' }}>الأب</div>
+            <div style={{ fontSize: 13, color: '#1f2937', background: '#f9fafb', padding: '8px 10px', borderRadius: 6, border: '1px solid #e5e7eb' }}>👨 {person.fatherName}</div>
+          </div>
+        )}
         {person.motherName && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 10, color: '#6b7280', fontFamily: "'Segoe UI', sans-serif", marginBottom: 4, fontWeight: 600, textTransform: 'uppercase' }}>الأم</div>
@@ -784,7 +908,7 @@ function DetailPanel({ personId, onClose, onNavigate }: {
               display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'inherit', transition: 'all 0.2s',
             }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.backgroundColor = '#eff6ff'; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.backgroundColor = '#f9fafb'; }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: parent.gender === 'female' ? '#ec4899' : '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700, fontFamily: "'Segoe UI', sans-serif", flexShrink: 0 }}>{getInitials(parent.name)}</div>
-              <span style={{ fontSize: 13, color: '#1f2937', fontFamily: "'Markazi Text', serif", fontWeight: 600 }}>{shortenName(parent.name)}</span>
+              <span style={{ fontSize: 13, color: '#1f2937', fontFamily: "'Markazi Text', serif", fontWeight: 600 }}>{parent.name}</span>
             </button>
           </div>
         )}
@@ -816,7 +940,7 @@ function DetailPanel({ personId, onClose, onNavigate }: {
               }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.backgroundColor = '#eff6ff'; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.backgroundColor = '#f9fafb'; }}>
                 <div style={{ width: 28, height: 28, borderRadius: '50%', background: c.gender === 'female' ? '#ec4899' : '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 700, fontFamily: "'Segoe UI', sans-serif", flexShrink: 0 }}>{getInitials(c.name)}</div>
                 <div style={{ flex: 1, textAlign: 'right' }}>
-                  <div style={{ fontSize: 12, color: '#1f2937', fontFamily: "'Markazi Text', serif", fontWeight: 600 }}>{shortenName(c.name)}</div>
+                  <div style={{ fontSize: 12, color: '#1f2937', fontFamily: "'Markazi Text', serif", fontWeight: 600 }}>{c.name}</div>
                   {c.nickname && <div style={{ fontSize: 9, color: '#6b7280', fontStyle: 'italic' }}>{c.nickname}</div>}
                 </div>
                 {(c.children || []).length > 0 && (
