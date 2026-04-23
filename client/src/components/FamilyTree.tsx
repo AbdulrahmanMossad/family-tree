@@ -773,7 +773,10 @@ function TreeSVG({ rootId, selectedId, onSelect, expandedNodes, onToggleExpand }
             {/* Expand/collapse button */}
             {childCount > 0 && (
               <g
-                onClick={() => onToggleExpand(layout.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleExpand(layout.id);
+                }}
                 style={{ cursor: 'pointer' }}
               >
                 <circle 
